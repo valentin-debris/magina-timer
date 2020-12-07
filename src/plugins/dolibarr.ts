@@ -216,21 +216,12 @@ async function removeTime(time: RxTimeDocument) {
     }
 
     await time.remove();
-    // let result = await db.times
-    //     .find({
-    //         selector: {
-    //             dolibarrId: time.dolibarrId,
-    //         },
-    //     })
-    //     .exec();
-    // await result.forEach(async (i) => await i.remove());
 
     return true;
 }
 
 async function logout() {
     await keytar.deletePassword(keytarService, "api-key");
-    // await ipcRenderer.invoke("clearLastCall");
 }
 
 async function getClients() {

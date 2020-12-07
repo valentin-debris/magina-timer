@@ -15,7 +15,6 @@ import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
 
 import AutoUpdate from "@/plugins/checkUpdate";
 import Config from "@/plugins/electronStore";
-import EventBus from "@/plugins/eventBus";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import path from "path";
 
@@ -117,16 +116,20 @@ async function createMainWindow() {
     });
 
     ipcMain.handle("closeWindow", (e, typeWindow: string) => {
-        if (typeWindow == 'popupIdle' && popupIdleWindow) {
+        if (typeWindow == "popupIdle" && popupIdleWindow) {
             popupIdleWindow.close();
             popupIdleWindow = null;
-        } else if (typeWindow == 'preferences' && prefWindow) {
+        } else if (typeWindow == "preferences" && prefWindow) {
             prefWindow.close();
             prefWindow = null;
-        } else if (typeWindow == 'timeExport' && exportWindow) {
+        } else if (typeWindow == "timeExport" && exportWindow) {
             exportWindow.close();
             exportWindow = null;
         }
+    });
+
+    ipcMain.handle("show_foreground", () => {
+        if (mainWindow) mainWindow.show();
     });
 
     //Setup the menu
@@ -184,7 +187,12 @@ async function createMainWindow() {
                 {
                     label: "Docs",
                     click: function() {
-                        popupIdleWindow = createSubWindow("popupIdle", true, 400, 300);
+                        popupIdleWindow = createSubWindow(
+                            "popupIdle",
+                            true,
+                            400,
+                            300
+                        );
                         // shell.openExternal(
                         //     "https://developers.magina.fr/documentation/magina-timer/"
                         // );

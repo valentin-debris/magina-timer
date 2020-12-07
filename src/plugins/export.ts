@@ -1,10 +1,10 @@
+import { remote, shell } from "electron";
+
 import Config from "./electronStore";
 import DatabaseService from "./database";
 import { RxClientDocument } from "@/RxDB";
 import XLSX from "xlsx";
 import errorH from "./errorHandler";
-//@ts-ignore
-import { saveAs } from "file-saver";
 //@ts-ignore
 import wbDetails from "../assets/xlsx/template_details.xlsx";
 //@ts-ignore
@@ -22,13 +22,43 @@ function updateValue(val: any, cell: string) {
     XLSX.utils.sheet_add_aoa(wsT, val, { origin: cell });
 }
 
-async function exportHours(startMonth: string, round: boolean) {
+async function askLocation(fileName: string) {
+    //@ts-ignore
+    const dial = await remote.dialog.showSaveDialog(null, {
+        defaultPath: fileName,
+        filters: [
+            { name: "Excel", extensions: ["xlsx"] },
+            { name: "All Files", extensions: ["*"] },
+        ],
+    });
+    const pathSave = dial.filePath;
+    return pathSave;
+}
+
+async function openFile(pathFile: string): Promise<boolean> {
+    if (!pathFile) return false;
+
     try {
+        await shell.openPath(pathFile);
+        return true;
+    } catch (error) {
+        errorH(error);
+    }
+    return false;
+}
+
+async function exportHours(
+    startMonth: string,
+    round: boolean
+): Promise<boolean> {
+    try {
+        const dayT = new Date(startMonth + "-01");
+        const pathSave = await askLocation("detail_heures_" + startMonth);
+        if (!pathSave) return false;
+
         const { fullName, salary, hours } = Config.get("preferences.files");
         const firstSheetName = wbHours.SheetNames[0];
         wsT = wbHours.Sheets[firstSheetName];
-
-        const dayT = new Date(startMonth + "-01");
 
         const options = {
             month: "long",
@@ -46,7 +76,7 @@ async function exportHours(startMonth: string, round: boolean) {
             0
         ).getDate();
 
-        let numCell = 11; //Cell for first Monday in Excel
+        let numCell = 8; //Cell for first Monday in Excel
         if (dayT.getDay() == 0) {
             //If sunday, select monday
             dayT.setDate(dayT.getDate() + 1);
@@ -113,18 +143,13 @@ async function exportHours(startMonth: string, round: boolean) {
             if (durationDay > 0) updateValue(durationDay, "C" + numCell);
             numCell++;
         }
-        const buffer = XLSX.write(wbHours, { bookType: "xlsx", type: "array" });
 
-        const fileType =
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        const fileExtension = ".xlsx";
-
-        const blob = new Blob([buffer], { type: fileType });
-        saveAs(blob, "detail_heures_" + startMonth + fileExtension);
-        return;
+        XLSX.writeFile(wbHours, pathSave);
+        return await openFile(pathSave);
     } catch (error2) {
         errorH(error2);
     }
+    return false;
 }
 
 //startMonth <=> 2020-08 if august
@@ -135,8 +160,15 @@ async function exportDetails(
     round: boolean,
     client: RxClientDocument | null,
     showDesc: boolean
-) {
+): Promise<boolean> {
     try {
+        let fileName = "detail_activites_" + start + "_" + end + "_";
+        if (client) {
+            fileName += "_" + client.title.replace(/[^a-zA-Z0-9_]/g, "-");
+        }
+        const pathSave = await askLocation(fileName);
+        if (!pathSave) return false;
+
         const firstSheetName = wbDetails.SheetNames[0];
         wsT = wbDetails.Sheets[firstSheetName];
 
@@ -342,9 +374,8 @@ async function exportDetails(
                                     const strDateEnd = new Date(dateEnd * 1000)
                                         .toISOString()
                                         .substr(0, 10);
-                                    // if(strDateEnd != strDate) {
+
                                     updateValue(strDateEnd, "I" + numCell);
-                                    // }
 
                                     numCell++;
                                     prevDesc = k.title;
@@ -373,21 +404,13 @@ async function exportDetails(
         numCell += 2;
         updateValue([["TOTAL", "--"]], "E" + numCell);
         wsT!["F" + numCell] = { f: "SUM(F2:F" + (numCell - 2) + ")" };
-        // ws.getRow(numCell).font = { size: 14, bold: true };
 
-        const buffer = XLSX.write(wbDetails, {
-            bookType: "xlsx",
-            type: "array",
-        });
-        const fileType =
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        const fileExtension = ".xlsx";
-
-        const blob = new Blob([buffer], { type: fileType });
-        saveAs(blob, "detail_activites_" + start + "_" + end + fileExtension);
+        XLSX.writeFile(wbHours, pathSave);
+        return await openFile(pathSave);
     } catch (error2) {
         errorH(error2);
     }
+    return false;
 }
 
 export default {

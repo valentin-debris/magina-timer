@@ -6,7 +6,6 @@
             </li>
         </ul>
         <span v-else>Chargement en cours..</span>
-        <!-- TODO-mg add "Display more" -->
     </div>
 </template>
 

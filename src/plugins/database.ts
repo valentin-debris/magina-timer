@@ -84,12 +84,6 @@ async function _create(): Promise<RxItemsDatabase> {
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     (window as any).db = db; // write to window for debugging
 
-    // show leadership in title
-    // db.waitForLeadership().then(() => {
-    //     console.log("isLeader now");
-    //     document.title = "♛ " + document.title;
-    // });
-
     // create collections
     await Promise.all(collections.map((colData) => db.collection(colData)));
 

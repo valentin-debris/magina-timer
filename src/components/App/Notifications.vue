@@ -1,16 +1,16 @@
 <template>
-    <div v-if="displayNotif" class="notifications">
+    <div v-if="items.length > 0" class="notifications">
         <ul class="elems">
-            <li>
-                <a href="#" v-on:click="payday()"
-                    >It's PayDay ! Générer ma feuille d'heures</a
-                >
+            <li v-for="item in items" :key="item.act">
+                <a href="#" v-on:click="clickNotif(item.act)">{{
+                    item.title
+                }}</a>
             </li>
         </ul>
-        <div class="icon">
-            <i class="fa fa-info-circle"></i
-            ><sup style="font-size: 10px;">(1)</sup>
-        </div>
+
+        <v-badge class="icon" overlap color="green" :content="items.length">
+            <v-icon color="black">fa fa-info-circle</v-icon>
+        </v-badge>
     </div>
 </template>
 
@@ -20,23 +20,48 @@ import { Component, Vue } from "vue-property-decorator";
 import Config from "@/plugins/electronStore";
 import DateConv from "@/plugins/dateConv";
 import Export from "@/plugins/export";
+import EventBus from "@/plugins/eventBus";
 
+export interface CustomItem {
+    act: any;
+    title: string;
+}
 @Component({})
 export default class Notifications extends Vue {
     private subConf: any = null;
-    private displayNotif = false;
+    private items: CustomItem[] = [];
 
     public mounted() {
         this.subConf = Config.onDidChange("today", this.newDay);
         this.newDay();
     }
 
+    public async clickNotif(act: string) {
+        if (act === "payday") {
+            this.payday();
+        }
+    }
+
     public newDay() {
-        this.displayNotif = new Date().getDate() == 27;
+        this.items = [];
+        if (new Date().getDate() == 27) {
+            this.items.push({
+                act: "payday",
+                title: "It's PayDay ! Générer ma feuille d'heures",
+            });
+        }
     }
 
     public async payday() {
-        await Export.exportHours(DateConv.formatYearMonth(), true);
+        const generateWorks = await Export.exportHours(
+            DateConv.formatYearMonth(),
+            true
+        );
+        let resultExport = "L'export n'a pas été généré.";
+        if (generateWorks) {
+            resultExport = "L'export a été généré.";
+        }
+        EventBus.$emit("SHOW_SNAKBAR", resultExport);
     }
 }
 </script>
@@ -50,6 +75,8 @@ export default class Notifications extends Vue {
 
     .icon {
         text-align: right;
+        display: block;
+        margin-right: 5px;
     }
     .elems {
         display: none;

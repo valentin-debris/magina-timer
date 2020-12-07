@@ -1,10 +1,10 @@
 <template>
     <v-app>
-        <v-tabs align-with-title background-color="primary" centered dark >
+        <v-tabs align-with-title background-color="primary" centered dark>
             <v-tab>Options</v-tab>
             <v-tab>Infos perso</v-tab>
 
-            <v-tab-item >
+            <v-tab-item>
                 <v-card flat>
                     <v-card-text>
                         <v-row>
@@ -41,8 +41,8 @@
                     </v-card-text>
                 </v-card>
             </v-tab-item>
-            
-            <v-tab-item >
+
+            <v-tab-item>
                 <v-card flat>
                     <v-card-text>
                         <v-row>
@@ -68,7 +68,9 @@
                 </v-card>
             </v-tab-item>
         </v-tabs>
-        <v-btn elevation="2" @click="close" class="grey lighten-2">Fermer</v-btn>
+        <v-btn elevation="2" @click="close" class="grey lighten-2"
+            >Fermer</v-btn
+        >
     </v-app>
 </template>
 
@@ -108,7 +110,7 @@ export default class Preferences extends Vue {
     }
 
     public async beforeDestroy() {
-        await ipcRenderer.invoke("closeWindow", 'preferences');
+        await ipcRenderer.invoke("closeWindow", "preferences");
     }
 }
 </script>
@@ -118,7 +120,6 @@ export default class Preferences extends Vue {
     font-family: Arial, sans-serif !important;
     font-size: 16px;
     .title {
-        // To pin point specific classes of some components
         font-family: Arial, sans-serif !important;
         font-size: 16px;
     }

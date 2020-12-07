@@ -138,6 +138,10 @@
         <v-btn elevation="2" v-on:click="close()" class="grey lighten-2"
             >Fermer</v-btn
         >
+
+        <v-snackbar v-model="snackbar" timeout="2000">
+            {{ resultExport }}
+        </v-snackbar>
     </v-app>
 </template>
 
@@ -161,6 +165,8 @@ export default class TimeExport extends Vue {
         start: false,
         end: false,
     };
+    private snackbar = false;
+    private resultExport = "";
 
     private clients: RxClientDocument[] = [];
     private selectedCl: RxClientDocument | null = null;
@@ -187,10 +193,11 @@ export default class TimeExport extends Vue {
     }
 
     public async generate() {
+        let generateWorks = false;
         if (this.typeSel == "hours") {
-            await Export.exportHours(this.month, this.round);
+            generateWorks = await Export.exportHours(this.month, this.round);
         } else {
-            await Export.exportDetails(
+            generateWorks = await Export.exportDetails(
                 this.start,
                 this.end,
                 this.round,
@@ -198,6 +205,11 @@ export default class TimeExport extends Vue {
                 this.showDesc
             );
         }
+        this.resultExport = "L'export n'a pas été généré.";
+        if (generateWorks) {
+            this.resultExport = "L'export a été généré.";
+        }
+        this.snackbar = true;
     }
 
     public async close() {
@@ -215,7 +227,6 @@ export default class TimeExport extends Vue {
     font-family: Arial, sans-serif !important;
     font-size: 16px;
     .title {
-        // To pin point specific classes of some components
         font-family: Arial, sans-serif !important;
         font-size: 16px;
         color: white;

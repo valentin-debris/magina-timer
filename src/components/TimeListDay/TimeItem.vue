@@ -33,7 +33,6 @@
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
 import DatabaseService from "@/plugins/database";
-// import Dolibarr from "@/plugins/dolibarr";
 import EventBus from "@/plugins/eventBus";
 import { RxTimeDocument } from "@/RxDB";
 
@@ -42,7 +41,6 @@ export default class TimeItem extends Vue {
     @Prop() time!: RxTimeDocument;
     private loading = false;
     private subtitle = "";
-    // private inProgress = false;
 
     @Watch("time.taskId", { immediate: true })
     async onChangeTask() {

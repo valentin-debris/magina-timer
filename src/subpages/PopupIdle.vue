@@ -1,20 +1,29 @@
 <template>
     <v-app>
-        <!-- <v-app-bar app color="primary" dark>
-            <Header />
-        </v-app-bar> -->
         <v-main>
             <v-container>
                 <p class="title">Vous êtes inactif depuis {{ timeInHMS() }}</p>
 
                 <div class="actions">
-                    <v-btn elevation="2" v-on:click="continueTime()" color="green white--text">
+                    <v-btn
+                        elevation="2"
+                        v-on:click="continueTime()"
+                        color="green white--text"
+                    >
                         Continuer
                     </v-btn>
-                    <v-btn elevation="2" v-on:click="stopTime()" color="red white--text">
+                    <v-btn
+                        elevation="2"
+                        v-on:click="stopTime()"
+                        color="red white--text"
+                    >
                         Arrêter à {{ timeInHMS() }}
                     </v-btn>
-                    <v-btn elevation="2" v-on:click="discardTime()" class="red lighten-3 white--text">
+                    <v-btn
+                        elevation="2"
+                        v-on:click="discardTime()"
+                        class="red lighten-3 white--text"
+                    >
                         Arrêter à {{ timeInHMS() }} et reprendre
                     </v-btn>
                 </div>
@@ -29,7 +38,6 @@ import { Component, Vue } from "vue-property-decorator";
 
 import Config from "@/plugins/electronStore";
 import DatabaseService from "@/plugins/database";
-// import DateConv from "@/plugins/dateConv";
 
 @Component({})
 export default class PopupIdle extends Vue {
@@ -43,7 +51,12 @@ export default class PopupIdle extends Vue {
     }
 
     public timeInHMS() {
-        return this.dateOpened.getHours() + "h" + (this.dateOpened.getMinutes() < 10 ? '0' : '') + this.dateOpened.getMinutes();
+        return (
+            this.dateOpened.getHours() +
+            "h" +
+            (this.dateOpened.getMinutes() < 10 ? "0" : "") +
+            this.dateOpened.getMinutes()
+        );
     }
 
     public async continueTime() {
@@ -61,7 +74,7 @@ export default class PopupIdle extends Vue {
     }
 
     public async beforeDestroy() {
-        await ipcRenderer.invoke("closeWindow", 'popupIdle');
+        await ipcRenderer.invoke("closeWindow", "popupIdle");
     }
 }
 </script>

@@ -10,6 +10,10 @@
             <Panel />
             <Filters />
             <Notifications />
+
+            <v-snackbar v-model="snackbar" :timeout="durationSk">
+                {{ messageSk }}
+            </v-snackbar>
         </v-main>
     </v-app>
 </template>
@@ -41,8 +45,9 @@ export default class App extends Vue {
     private timeCurrent: RxTimeDocument | null = null;
     private sub: Subscription | null = null;
     private db!: RxDatabase<RxItemsCollections>;
-    // private checkLogin = "";
-    // private checkSync = "";
+    private messageSk = "";
+    private durationSk = 3000;
+    private snackbar = false;
 
     private lastCheckNotif = new Date();
     private intervalIdle: NodeJS.Timeout | null = null;
@@ -64,12 +69,19 @@ export default class App extends Vue {
         ipcRenderer.on("logout", () => {
             Dolibarr.logout();
             EventBus.$emit("APP_LOGOUT");
-            // this.checkLogin = new Date().toISOString(); //Used to trigger change under "Login.vue"
         });
 
-        ipcRenderer.on("synchronize", () => {
-            EventBus.$emit("APP_SYNCHRONIZE");
-            // this.checkSync = new Date().toISOString(); //Used to trigger change under "HomePage.vue"
+        await this.synchro();
+        ipcRenderer.on("synchronize", async () => {
+            await this.synchro();
+        });
+
+        EventBus.$on("SHOW_SNAKBAR", (mes: string, duration = 3000) => {
+            if (mes) {
+                this.messageSk = mes;
+                this.durationSk = duration;
+                this.snackbar = true;
+            }
         });
 
         if (this.intervalIdle) {
@@ -92,7 +104,7 @@ export default class App extends Vue {
         const notification = {
             title: "Pensez à tracker votre temps",
             body: "On arrête de se tourner les pouces et on bosse !",
-            icon: iconNotif, //path.join(__dirname, "../assets/images/logo-transp.png"),
+            icon: iconNotif,
         };
 
         const notifTime = new window.Notification(
@@ -101,12 +113,13 @@ export default class App extends Vue {
         );
 
         notifTime.onclick = () => {
-            const obj = DatabaseService.getNewTimeObj();
-            obj.isPersonal = 1;
-            obj.isCurrent = 1;
-
             if (!this.timeCurrent) {
+                const obj = DatabaseService.getNewTimeObj();
+                obj.isPersonal = 1;
+                obj.isCurrent = 1;
+
                 this.db.times.insert(obj);
+                ipcRenderer.invoke("show_foreground");
             }
         };
         this.lastCheckNotif = new Date();
@@ -124,6 +137,39 @@ export default class App extends Vue {
         ) {
             await ipcRenderer.invoke("openPopupIdle");
         }
+    }
+
+    async synchro() {
+        const db = await DatabaseService.get();
+        const items = await db.times
+            .find({
+                selector: {
+                    $or: [
+                        { needInsert: 1 },
+                        { needUpdate: 1 },
+                        { needRemove: 1 },
+                    ],
+                },
+            })
+            .exec();
+
+        await Promise.all(
+            items.map(async (i) => {
+                await Dolibarr.updateDolibarr(i);
+            })
+        );
+
+        const syncs = [
+            Dolibarr.getClients(),
+            Dolibarr.getProjects(),
+            Dolibarr.getTasks(),
+            Dolibarr.getTimes(),
+        ];
+
+        await Promise.all(syncs).then(function(results) {
+            console.log("[HP] Sync done");
+            EventBus.$emit("APP_SYNCHRONIZE_DONE");
+        });
     }
 
     public beforeDestroy() {
