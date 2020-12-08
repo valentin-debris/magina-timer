@@ -5,7 +5,7 @@ module.exports = {
             nodeIntegration: true,
             externals: ["keytar"],
             builderOptions: {
-                productName: "magina-timer",
+                productName: "Magina Timer",
                 artifactName: "${productName}-${version}.${ext}",
                 // forceCodeSigning: true,
                 publish: [
