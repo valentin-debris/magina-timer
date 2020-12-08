@@ -460,9 +460,12 @@ export default class Panel extends Vue {
                     filters.push(i.title + i.taskId);
 
                     let title = i.title;
-                    const cl = await (await (await i.taskId_)?.projectId_)
-                        ?.clientId_;
+                    const tk = await i.taskId_;
+                    const cl = await (await tk?.projectId_)?.clientId_;
                     if (cl) {
+                        if (tk!.title) title += " | " + tk!.title;
+                        else title += " | " + tk!.refPropal;
+
                         title += " | " + cl.title;
                     } else {
                         title += " | Perso";

@@ -212,9 +212,12 @@ export default class Header extends Vue {
                     filters.push(i.title + i.taskId);
 
                     let title = i.title;
-                    const cl = await (await (await i.taskId_)?.projectId_)
-                        ?.clientId_;
+                    const tk = await i.taskId_;
+                    const cl = await (await tk?.projectId_)?.clientId_;
                     if (cl) {
+                        if (tk!.title) title += " | " + tk!.title;
+                        else title += " | " + tk!.refPropal;
+
                         title += " | " + cl.title;
                     } else {
                         title += " | Perso";
@@ -284,10 +287,10 @@ export default class Header extends Vue {
             subTitle = tk.title;
             const pj = await tk.projectId_;
             if (pj != null) {
-                subTitle = pj.title + " - " + subTitle;
+                subTitle = pj.title + " | " + subTitle;
                 const cl = await pj.clientId_;
                 if (cl != null) {
-                    subTitle = cl.title + " - " + subTitle;
+                    subTitle = cl.title + " | " + subTitle;
                 }
             }
         } else if (this.time.isPersonal) {
@@ -422,6 +425,18 @@ export default class Header extends Vue {
             transform: translateY(100%);
             overflow-y: auto;
             max-height: 85vh;
+            cursor: pointer;
+
+            ::v-deep {
+                .v-data-table__mobile-row {
+                    &:hover {
+                        background: #616161;
+                    }
+                    .v-data-table__mobile-row__cell {
+                        text-align: left !important;
+                    }
+                }
+            }
         }
     }
 }

@@ -140,6 +140,10 @@ export default class App extends Vue {
     }
 
     async synchro() {
+        this.messageSk = "Synchronisation en cours...";
+        this.durationSk = 30000;
+        this.snackbar = true;
+
         const db = await DatabaseService.get();
         const items = await db.times
             .find({
@@ -166,8 +170,12 @@ export default class App extends Vue {
             Dolibarr.getTimes(),
         ];
 
-        await Promise.all(syncs).then(function(results) {
+        await Promise.all(syncs).then((results) => {
             console.log("[HP] Sync done");
+
+            this.messageSk = "Synchronisation terminée !";
+            this.durationSk = 2000;
+
             EventBus.$emit("APP_SYNCHRONIZE_DONE");
         });
     }
