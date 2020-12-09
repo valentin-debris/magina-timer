@@ -375,7 +375,8 @@ async function exportDetails(
                                         .toISOString()
                                         .substr(0, 10);
 
-                                    updateValue(strDateEnd, "I" + numCell);
+                                    if (strDateEnd != strDate)
+                                        updateValue(strDateEnd, "I" + numCell);
 
                                     numCell++;
                                     prevDesc = k.title;
@@ -405,7 +406,7 @@ async function exportDetails(
         updateValue([["TOTAL", "--"]], "E" + numCell);
         wsT!["F" + numCell] = { f: "SUM(F2:F" + (numCell - 2) + ")" };
 
-        XLSX.writeFile(wbHours, pathSave);
+        XLSX.writeFile(wbDetails, pathSave);
         return await openFile(pathSave);
     } catch (error2) {
         errorH(error2);

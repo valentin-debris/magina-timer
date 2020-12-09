@@ -162,13 +162,13 @@ async function _create(): Promise<RxItemsDatabase> {
     }, true);
 
     // sync with server
-    db.times.sync({
-        remote: syncURL + "/times",
-        direction: {
-            pull: true,
-            push: true,
-        },
-    });
+    // db.times.sync({
+    //     remote: syncURL + "/times",
+    //     direction: {
+    //         pull: true,
+    //         push: true,
+    //     },
+    // });
 
     return db;
 }

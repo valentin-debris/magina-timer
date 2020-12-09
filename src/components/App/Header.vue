@@ -149,7 +149,7 @@ export default class Header extends Vue {
                     isCurrent: 1,
                 },
             })
-            .$.subscribe((time) => {
+            .$.subscribe(async (time) => {
                 if (time) {
                     this.time = time;
                     if (!this.intervalUpdDuration) {
@@ -159,7 +159,10 @@ export default class Header extends Vue {
                         );
                     }
                     Config.set("today", DateConv.formatFullDate());
-                } else this.time = null;
+                } else {
+                    this.time = null;
+                    await this.setupLastTimes();
+                }
             });
 
         await this.setupLastTimes();

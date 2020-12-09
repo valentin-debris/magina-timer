@@ -17,6 +17,7 @@ import AutoUpdate from "@/plugins/checkUpdate";
 import Config from "@/plugins/electronStore";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import path from "path";
+import url from "url";
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -165,7 +166,12 @@ async function createMainWindow() {
                 {
                     label: "Export",
                     click: function() {
-                        exportWindow = createSubWindow("timeExport");
+                        exportWindow = createSubWindow(
+                            "timeExport",
+                            false,
+                            350,
+                            560
+                        );
                     },
                 },
             ],
@@ -228,85 +234,126 @@ async function createMainWindow() {
     }
 }
 
-// Quit when all windows are closed.
-app.on("window-all-closed", () => {
-    // On macOS it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
-    if (process.platform !== "darwin") {
-        app.quit();
-    }
-});
+const gotTheLock = app.requestSingleInstanceLock();
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
+if (!gotTheLock) {
+    app.quit();
+} else {
+    app.on("second-instance", (event, commandLine, workingDirectory) => {
+        // Quelqu'un a tenté d'exécuter une seconde instance. Nous devrions focus la fenêtre.
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) mainWindow.show();
+            mainWindow.focus();
 
-app.whenReady().then(async () => {
-    if (isDev && !process.env.IS_TEST) {
-        // Install Vue Devtools
-        try {
-            await installExtension(VUEJS_DEVTOOLS);
-        } catch (e) {
-            console.error("Vue Devtools failed to install:", e.toString());
+            //send event to start
+            var params = url.parse(commandLine[commandLine.length - 1], true)
+                .query;
+            if (params) mainWindow.webContents.send("openFromLink", params);
+        }
+    });
+
+    // Quit when all windows are closed.
+    app.on("window-all-closed", () => {
+        // On macOS it is common for applications and their menu bar
+        // to stay active until the user quits explicitly with Cmd + Q
+        if (process.platform !== "darwin") {
+            app.quit();
+        }
+    });
+
+    // This method will be called when Electron has finished
+    // initialization and is ready to create browser windows.
+    // Some APIs can only be used after this event occurs.
+
+    app.whenReady().then(async () => {
+        if (isDev && !process.env.IS_TEST) {
+            // Install Vue Devtools
+            try {
+                await installExtension(VUEJS_DEVTOOLS);
+            } catch (e) {
+                console.error("Vue Devtools failed to install:", e.toString());
+            }
+        }
+
+        Sentry.init({
+            dsn: process.env.VUE_APP_CRASH_HOST,
+        });
+
+        await AutoUpdate();
+
+        Config.set("version", app.getVersion());
+
+        appIcon = new Tray(iconPath);
+        appIcon.setToolTip("Magina Timer");
+        const contextMenu = Menu.buildFromTemplate([
+            {
+                label: "Ouvrir",
+                click: function() {
+                    mainWindow.show();
+                },
+            },
+            {
+                label: "Quitter",
+                click: function() {
+                    // @ts-ignore
+                    app.isQuiting = true;
+                    app.quit();
+                },
+            },
+        ]);
+
+        // Fait un changement au menu contextuel
+        contextMenu.items[1].checked = false;
+
+        // Appelé à nouveau pour Linux car nous avons modifié le menu contextuel
+        appIcon.setContextMenu(contextMenu);
+        appIcon.on("double-click", function() {
+            mainWindow.show();
+        });
+
+        createMainWindow();
+
+        app.on("activate", () => {
+            // On macOS it's common to re-create a window in the app when the
+            // dock icon is clicked and there are no other windows open.
+            if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+        });
+    });
+
+    // Exit cleanly on request from parent process in development mode.
+    if (isDev) {
+        if (process.platform === "win32") {
+            process.on("message", (data) => {
+                if (data === "graceful-exit") {
+                    app.quit();
+                }
+            });
+        } else {
+            process.on("SIGTERM", () => {
+                app.quit();
+            });
         }
     }
 
-    Sentry.init({
-        dsn: process.env.VUE_APP_CRASH_HOST,
-    });
+    // var link;
+    // // This will catch clicks on links such as <a href="foobar://abc=1">open in foobar</a>
+    // app.on("open-url", function(event, data) {
+    //     console.log("aaaa");
+    //     event.preventDefault();
+    //     link = data;
+    // });
 
-    await AutoUpdate();
-
-    Config.set("version", app.getVersion());
-
-    appIcon = new Tray(iconPath);
-    appIcon.setToolTip("Magina Timer");
-    const contextMenu = Menu.buildFromTemplate([
-        {
-            label: "Ouvrir",
-            click: function() {
-                mainWindow.show();
-            },
-        },
-        {
-            label: "Quitter",
-            click: function() {
-                // @ts-ignore
-                app.isQuiting = true;
-                app.quit();
-            },
-        },
-    ]);
-
-    // Fait un changement au menu contextuel
-    contextMenu.items[1].checked = false;
-
-    // Appelé à nouveau pour Linux car nous avons modifié le menu contextuel
-    appIcon.setContextMenu(contextMenu);
-    appIcon.on("double-click", function() {
-        mainWindow.show();
-    });
-
-    createMainWindow();
-
-    app.on("activate", () => {
-        // On macOS it's common to re-create a window in the app when the
-        // dock icon is clicked and there are no other windows open.
-        if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
-    });
-});
-
-// Exit cleanly on request from parent process in development mode.
-if (isDev) {
-    if (process.platform === "win32") {
-        process.on("message", (data) => {
-            if (data === "graceful-exit") {
-                app.quit();
-            }
-        });
+    app.removeAsDefaultProtocolClient("mgt");
+    // If we are running a non-packaged version of the app && on windows
+    if (isDev && process.platform === "win32") {
+        // Set the path of electron.exe and your app.
+        // These two additional parameters are only available on windows.
+        app.setAsDefaultProtocolClient("mgt", process.execPath, [
+            path.resolve(process.argv[1]),
+        ]);
     } else {
-        process.on("SIGTERM", () => {
-            app.quit();
-        });
+        app.setAsDefaultProtocolClient("mgt");
     }
 }
+
+// export default getLink = () => link;

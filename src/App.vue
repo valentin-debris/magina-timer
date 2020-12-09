@@ -71,6 +71,21 @@ export default class App extends Vue {
             EventBus.$emit("APP_LOGOUT");
         });
 
+        ipcRenderer.on("openFromLink", async (event, arg) => {
+            console.log("[APP] OpenFromLink");
+
+            // if(arg.title) {
+            //     form.querySelector('input[name="title"]').value = arg.title;
+            // }
+            // if(arg.projectId) {
+            //     initPanSelects(arg.projectId, "project", true);
+            // } else if(arg.taskId) {
+            //     initPanSelects(arg.taskId, "task", true);
+            // }
+            console.log(arg);
+            //TODO-mg improve here when links available (MGC ?)
+        });
+
         await this.synchro();
         ipcRenderer.on("synchronize", async () => {
             await this.synchro();

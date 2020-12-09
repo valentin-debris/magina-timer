@@ -105,6 +105,7 @@
                             auto-select-first
                             chips
                             clearable
+                            hide-details
                             :items="clients"
                             item-text="title"
                             item-value="id"

@@ -1,5 +1,9 @@
 <template>
-    <div class="panel" v-bind:class="{ open: time }">
+    <div
+        class="panel"
+        v-bind:class="{ open: time }"
+        v-click-outside="clickOutsidePanel"
+    >
         <div class="infoTime" v-if="time">
             <v-row class="timeTitle">
                 <v-text-field
@@ -77,7 +81,7 @@
             <v-row>
                 <v-autocomplete
                     ref="acplAll"
-                    label="Tous"
+                    label="Recherche globale"
                     v-model="selectedAll"
                     auto-select-first
                     chips
@@ -239,6 +243,10 @@ export default class Panel extends Vue {
     private subTk: Subscription | null = null;
     private subTs: Subscription | null = null;
 
+    public clickOutsidePanel() {
+        if (this.setupDone == false || !this.time) return;
+        this.time = null;
+    }
     public onFocusDesc(e: FocusEvent) {
         if (e.type == "focus") this.openLastTimes = true;
         else {
@@ -260,11 +268,7 @@ export default class Panel extends Vue {
 
             this.description = t.title;
 
-            if (t.isPersonal) {
-                this.selectedTk = null;
-                this.selectedPj = null;
-                this.selectedCl = null;
-            } else {
+            if (!t.isPersonal) {
                 this.selectedTk = await t.taskId_!;
                 this.selectedPj = await this.selectedTk!.projectId_;
                 this.selectedCl = await this.selectedPj!.clientId_;
@@ -420,6 +424,19 @@ export default class Panel extends Vue {
                         //@ts-ignore
                         this.allTasks[itemId].push(i);
                     });
+                }
+            });
+
+        this.subTs = this.db.times
+            .findOne({
+                selector: {
+                    isCurrent: 1,
+                },
+            })
+            .$.subscribe(async (time) => {
+                if (!time) {
+                    //Update the setup with the last one
+                    await this.setupLastTimes();
                 }
             });
 
@@ -705,6 +722,17 @@ export default class Panel extends Vue {
             right: 0;
             bottom: 20px;
             transform: translateY(100%);
+
+            ::v-deep {
+                .v-data-table__mobile-row {
+                    &:hover {
+                        background: #6161613b;
+                    }
+                    .v-data-table__mobile-row__cell {
+                        text-align: left !important;
+                    }
+                }
+            }
         }
     }
     .v-autocomplete {
