@@ -52,13 +52,14 @@ async function exportHours(
     round: boolean
 ): Promise<boolean> {
     try {
+        const currentWB = JSON.parse(JSON.stringify(wbHours)); //Deep copy
         const dayT = new Date(startMonth + "-01");
         const pathSave = await askLocation("detail_heures_" + startMonth);
         if (!pathSave) return false;
 
         const { fullName, salary, hours } = Config.get("preferences.files");
-        const firstSheetName = wbHours.SheetNames[0];
-        wsT = wbHours.Sheets[firstSheetName];
+        const firstSheetName = currentWB.SheetNames[0];
+        wsT = currentWB.Sheets[firstSheetName];
 
         const options = {
             month: "long",
@@ -144,7 +145,7 @@ async function exportHours(
             numCell++;
         }
 
-        XLSX.writeFile(wbHours, pathSave);
+        XLSX.writeFile(currentWB, pathSave);
         return await openFile(pathSave);
     } catch (error2) {
         errorH(error2);
@@ -162,6 +163,7 @@ async function exportDetails(
     showDesc: boolean
 ): Promise<boolean> {
     try {
+        const currentWB = JSON.parse(JSON.stringify(wbDetails)); //Deep copy
         let fileName = "detail_activites_" + start + "_" + end + "_";
         if (client) {
             fileName += "_" + client.title.replace(/[^a-zA-Z0-9_]/g, "-");
@@ -169,8 +171,8 @@ async function exportDetails(
         const pathSave = await askLocation(fileName);
         if (!pathSave) return false;
 
-        const firstSheetName = wbDetails.SheetNames[0];
-        wsT = wbDetails.Sheets[firstSheetName];
+        const firstSheetName = currentWB.SheetNames[0];
+        wsT = currentWB.Sheets[firstSheetName];
 
         const dayStart = new Date(start);
         const dayEnd = new Date(end);
@@ -406,7 +408,7 @@ async function exportDetails(
         updateValue([["TOTAL", "--"]], "E" + numCell);
         wsT!["F" + numCell] = { f: "SUM(F2:F" + (numCell - 2) + ")" };
 
-        XLSX.writeFile(wbDetails, pathSave);
+        XLSX.writeFile(currentWB, pathSave);
         return await openFile(pathSave);
     } catch (error2) {
         errorH(error2);

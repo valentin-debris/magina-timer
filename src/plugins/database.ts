@@ -25,8 +25,6 @@ import taskSchema from "@/schemas/Task.schema";
 import timeSchema from "@/schemas/Time.schema";
 import { v4 as uuidv4 } from "uuid";
 
-const isDev = process.env.NODE_ENV !== "production";
-
 if (process.env.NODE_ENV === "development") {
     // in dev-mode we add the dev-mode plugin
     // which does many checks and adds full error messages

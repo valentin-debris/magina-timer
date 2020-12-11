@@ -338,7 +338,6 @@ if (!gotTheLock) {
     // var link;
     // // This will catch clicks on links such as <a href="foobar://abc=1">open in foobar</a>
     // app.on("open-url", function(event, data) {
-    //     console.log("aaaa");
     //     event.preventDefault();
     //     link = data;
     // });

@@ -96,6 +96,7 @@ export default class Login extends Vue {
 
             if (connected) {
                 this.dialog = false;
+                EventBus.$emit("APP_SYNCHRONIZE_RUN");
             } else {
                 this.alert = true;
             }

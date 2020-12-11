@@ -10,7 +10,7 @@ import keytar from "keytar";
 require("dotenv").config();
 
 const isDev = process.env.NODE_ENV !== "production";
-const keytarService = isDev ? "maginaTimerDev" : "maginaTimer";
+const keytarService = isDev ? "maginaTimerDev" : "maginaTimerProd";
 
 axios.defaults.baseURL = process.env.VUE_APP_DOLIBARR_HOST + "/api/index.php/";
 async function checkCred() {
@@ -71,26 +71,28 @@ async function getData(type: string, collection: RxCollection, urlApi: string) {
                 //First import
                 await collection.bulkInsert(response.data);
             } else {
-                await response.data.forEach(async (i: RxTimeDocument) => {
-                    if (type == "times") {
-                        //When sync items, it returns also the ones that we have created between
-                        // the last sync & now, so get the right ID to avoid duplicate
-                        const dupli = await collection
-                            .findOne({
-                                selector: {
-                                    dolibarrId: i.dolibarrId,
-                                },
-                            })
-                            .exec();
-                        if (dupli) {
-                            i.id = dupli.id;
-                        } else if (!i.id) {
-                            //The upsert doesn't trigger the "preInsert", used for times
-                            i.id = DatabaseService.getRandomId();
+                await Promise.all(
+                    response.data.map(async (i: RxTimeDocument) => {
+                        if (type == "times") {
+                            //When sync items, it returns also the ones that we have created between
+                            // the last sync & now, so get the right ID to avoid duplicate
+                            const dupli = await collection
+                                .findOne({
+                                    selector: {
+                                        dolibarrId: i.dolibarrId,
+                                    },
+                                })
+                                .exec();
+                            if (dupli) {
+                                i.id = dupli.id;
+                            } else if (!i.id) {
+                                //The upsert doesn't trigger the "preInsert", used for times
+                                i.id = DatabaseService.getRandomId();
+                            }
                         }
-                    }
-                    await collection.upsert(i);
-                });
+                        await collection.upsert(i);
+                    })
+                );
             }
         }
 
@@ -260,7 +262,8 @@ async function updateDolibarr(time: RxTimeDocument) {
                     const success = await removeTime(time);
                     if (success) {
                         const db = await DatabaseService.get();
-                        await db.times.insert(obj); //The insert will be trigger by this listener and the time will be pushed
+                        const newT = await db.times.insert(obj); //The insert will be trigger by this listener and the time will be pushed
+                        await createTime(newT);
                     }
                 } else {
                     await updateTime(time);

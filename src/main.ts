@@ -30,11 +30,15 @@ if (getIntegrations && getIntegrations().browser) {
 Vue.directive("click-outside", {
     bind() {
         //@ts-ignore
+        if (!this) return;
+        //@ts-ignore
         this.event = (event) => this.vm.$emit(this.expression, event); //@ts-ignore
         this.el.addEventListener("click", this.stopProp); //@ts-ignore
         document.body.addEventListener("click", this.event);
     },
     unbind() {
+        //@ts-ignore
+        if (!this) return;
         //@ts-ignore
         this.el.removeEventListener("click", this.stopProp); //@ts-ignore
         document.body.removeEventListener("click", this.event);

@@ -91,6 +91,10 @@ export default class App extends Vue {
             await this.synchro();
         });
 
+        EventBus.$on("APP_SYNCHRONIZE_RUN", async () => {
+            await this.synchro();
+        });
+
         EventBus.$on("SHOW_SNAKBAR", (mes: string, duration = 3000) => {
             if (mes) {
                 this.messageSk = mes;
@@ -186,12 +190,20 @@ export default class App extends Vue {
         ];
 
         await Promise.all(syncs).then((results) => {
-            console.log("[HP] Sync done");
+            const checker = results.every((v) => v === true);
 
-            this.messageSk = "Synchronisation terminée !";
-            this.durationSk = 2000;
+            if (checker == true) {
+                console.log("[HP] Sync done");
 
-            EventBus.$emit("APP_SYNCHRONIZE_DONE");
+                this.messageSk = "Synchronisation terminée !";
+                this.durationSk = 2000;
+                EventBus.$emit("APP_SYNCHRONIZE_DONE");
+            } else {
+                console.log("[HP] Sync failed");
+                this.messageSk =
+                    "La synchronisation a échoué. Réessayez ou reconnectez-vous.";
+                this.durationSk = 10000;
+            }
         });
     }
 

@@ -5,12 +5,11 @@
         v-click-outside="clickOutsidePanel"
     >
         <div class="infoTime" v-if="time">
-            <v-row class="timeTitle">
+            <v-row class="timeTitle" v-click-outside="onFocusDesc">
                 <v-text-field
                     label="Description"
                     v-model="description"
                     @focus="onFocusDesc"
-                    @blur="onFocusDesc"
                 ></v-text-field>
 
                 <v-data-table
@@ -243,22 +242,21 @@ export default class Panel extends Vue {
     private subTk: Subscription | null = null;
     private subTs: Subscription | null = null;
 
-    public clickOutsidePanel() {
+    public clickOutsidePanel(e: MouseEvent) {
         if (this.setupDone == false || !this.time) return;
+
+        let ignore = false;
+        //@ts-ignore
+        e?.path?.forEach((p) => {
+            if (p?.classList?.contains("v-menu__content")) ignore = true;
+        });
+        if (ignore) return;
+
         this.time = null;
     }
-    public onFocusDesc(e: FocusEvent) {
+    public onFocusDesc(e: FocusEvent | MouseEvent) {
         if (e.type == "focus") this.openLastTimes = true;
-        else {
-            //use a delay to allow the "onSelectlastT" to works
-            setTimeout(
-                function() {
-                    //@ts-ignore
-                    this.openLastTimes = false;
-                }.bind(this),
-                500
-            );
-        }
+        else this.openLastTimes = false;
     }
 
     public async onSelectLastT(i: CustomItem) {
@@ -277,6 +275,7 @@ export default class Panel extends Vue {
             await this.setupSelects();
             this.setupDone = true;
         }
+        this.openLastTimes = false;
     }
 
     public async onChangeAll(item: CustomItem) {
@@ -467,32 +466,39 @@ export default class Panel extends Vue {
                 start: "desc",
             })
             .exec()
-            .then((times) => {
+            .then(async (times) => {
                 this.lastTimes = [];
                 const filters: string[] = [];
-                times.forEach(async (i) => {
-                    if (filters.includes(i.title + i.taskId)) {
-                        return;
-                    }
-                    filters.push(i.title + i.taskId);
+                const items = await Promise.all(
+                    times.map(async (i) => {
+                        if (filters.includes(i.title + i.taskId)) {
+                            return;
+                        }
+                        filters.push(i.title + i.taskId);
 
-                    let title = i.title;
-                    const tk = await i.taskId_;
-                    const cl = await (await tk?.projectId_)?.clientId_;
-                    if (cl) {
-                        if (tk!.title) title += " | " + tk!.title;
-                        else title += " | " + tk!.refPropal;
+                        let title = i.title;
+                        const tk = await i.taskId_;
+                        const cl = await (await tk?.projectId_)?.clientId_;
+                        if (cl) {
+                            if (tk!.title) title += " | " + tk!.title;
+                            else title += " | " + tk!.refPropal;
 
-                        title += " | " + cl.title;
-                    } else {
-                        title += " | Perso";
-                    }
-                    this.lastTimes.push({
-                        id: i.id,
-                        type: "time",
-                        title: title,
-                        obj: i,
-                    });
+                            title += " | " + cl.title;
+                        } else {
+                            title += " | Perso";
+                        }
+
+                        return {
+                            id: i.id,
+                            type: "time",
+                            title: title,
+                            obj: i,
+                        };
+                    })
+                );
+                //@ts-ignore
+                this.lastTimes = items.filter(function(el: CustomItem) {
+                    return el != null;
                 });
             });
     }
@@ -722,6 +728,7 @@ export default class Panel extends Vue {
             right: 0;
             bottom: 20px;
             transform: translateY(100%);
+            cursor: pointer;
 
             ::v-deep {
                 .v-data-table__mobile-row {

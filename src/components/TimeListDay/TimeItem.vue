@@ -56,7 +56,13 @@ export default class TimeItem extends Vue {
     }
 
     public togglePan() {
-        EventBus.$emit("TOGGLE_PAN", this.time);
+        setTimeout(
+            function() {
+                //@ts-ignore
+                EventBus.$emit("TOGGLE_PAN", this.time);
+            }.bind(this),
+            200
+        );
     }
 
     public async startTimeFromHere() {

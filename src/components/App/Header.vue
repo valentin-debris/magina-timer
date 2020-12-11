@@ -205,32 +205,39 @@ export default class Header extends Vue {
                 start: "desc",
             })
             .exec()
-            .then((times) => {
+            .then(async (times) => {
                 this.lastTimes = [];
                 const filters: string[] = [];
-                times.forEach(async (i) => {
-                    if (filters.includes(i.title + i.taskId)) {
-                        return;
-                    }
-                    filters.push(i.title + i.taskId);
+                const items = await Promise.all(
+                    times.map(async (i) => {
+                        if (filters.includes(i.title + i.taskId)) {
+                            return;
+                        }
+                        filters.push(i.title + i.taskId);
 
-                    let title = i.title;
-                    const tk = await i.taskId_;
-                    const cl = await (await tk?.projectId_)?.clientId_;
-                    if (cl) {
-                        if (tk!.title) title += " | " + tk!.title;
-                        else title += " | " + tk!.refPropal;
+                        let title = i.title;
+                        const tk = await i.taskId_;
+                        const cl = await (await tk?.projectId_)?.clientId_;
+                        if (cl) {
+                            if (tk!.title) title += " | " + tk!.title;
+                            else title += " | " + tk!.refPropal;
 
-                        title += " | " + cl.title;
-                    } else {
-                        title += " | Perso";
-                    }
-                    this.lastTimes.push({
-                        id: i.id,
-                        type: "time",
-                        title: title,
-                        obj: i,
-                    });
+                            title += " | " + cl.title;
+                        } else {
+                            title += " | Perso";
+                        }
+
+                        return {
+                            id: i.id,
+                            type: "time",
+                            title: title,
+                            obj: i,
+                        };
+                    })
+                );
+                //@ts-ignore
+                this.lastTimes = items.filter(function(el: CustomItem) {
+                    return el != null;
                 });
             });
     }
