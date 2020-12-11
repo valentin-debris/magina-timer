@@ -123,6 +123,7 @@ async function createTime(time: RxTimeDocument) {
                         data.isPersonal = 1;
                         data.needInsert = 0;
                         data.taskId = "";
+                        data.futurTaskId = "";
                         data.dolibarrId = "";
                         return data;
                     });
@@ -135,6 +136,7 @@ async function createTime(time: RxTimeDocument) {
             await time.atomicUpdate((data) => {
                 data.needInsert = 0;
                 data.existRemote = 1;
+                data.futurTaskId = "";
                 data.dolibarrId = dolibarrId + "";
                 return data;
             });
@@ -173,6 +175,7 @@ async function updateTime(time: RxTimeDocument) {
                         data.needInsert = 0;
                         data.needUpdate = 0;
                         data.taskId = "";
+                        data.futurTaskId = "";
                         data.dolibarrId = "";
                         return data;
                     });
@@ -182,6 +185,7 @@ async function updateTime(time: RxTimeDocument) {
         if (resp) {
             await time.atomicUpdate((data) => {
                 data.needUpdate = 0;
+                data.futurTaskId = "";
                 return data;
             });
         }
@@ -252,7 +256,7 @@ async function updateDolibarr(time: RxTimeDocument) {
             if (time.needRemove || time.isPersonal) {
                 await removeTime(time);
             } else {
-                if (time.futurTaskId != "0") {
+                if (time.futurTaskId && time.futurTaskId != "0") {
                     const obj = DatabaseService.getNewTimeObj();
                     obj.start = time.start;
                     obj.title = time.title;

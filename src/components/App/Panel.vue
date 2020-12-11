@@ -266,7 +266,11 @@ export default class Panel extends Vue {
 
             this.description = t.title;
 
-            if (!t.isPersonal) {
+            if (t.isPersonal) {
+                this.selectedTk = null;
+                this.selectedPj = null;
+                this.selectedCl = null;
+            } else {
                 this.selectedTk = await t.taskId_!;
                 this.selectedPj = await this.selectedTk!.projectId_;
                 this.selectedCl = await this.selectedPj!.clientId_;
