@@ -125,11 +125,9 @@ export default class Header extends Vue {
         const t = i.obj as RxTimeDocument;
         if (t) {
             this.title = t.title;
-            // debugger;
 
             if (this.time) {
                 await this.time.atomicUpdate((data) => {
-                    // debugger;
                     data.title = this.title;
                     data.taskId = t.taskId;
                     data.isPersonal = t.isPersonal;
@@ -316,7 +314,13 @@ export default class Header extends Vue {
         if (!this.time) {
             return;
         }
-        EventBus.$emit("TOGGLE_PAN", this.time);
+        setTimeout(
+            function() {
+                //@ts-ignore
+                EventBus.$emit("TOGGLE_PAN", this.time);
+            }.bind(this),
+            200
+        );
     }
 
     public updateDuration() {
