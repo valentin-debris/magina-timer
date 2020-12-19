@@ -2,16 +2,21 @@ import * as PouchdbAdapterHttp from "pouchdb-adapter-http";
 import * as PouchdbAdapterIdb from "pouchdb-adapter-idb";
 
 import {
+    RxClientDocument,
     RxItemsCollections,
     RxItemsDatabase,
+    RxProjectDocument,
+    RxScheduleDocument,
+    RxScheduleDocumentType,
+    RxTaskDocument,
     RxTimeDocument,
     RxTimeDocumentType,
 } from "@/RxDB";
 import { addRxPlugin, createRxDatabase } from "rxdb/plugins/core";
 
+import Config from "@/plugins/electronStore";
 import DateConv from "@/plugins/dateConv";
 import Dolibarr from "@/plugins/dolibarr";
-import Config from "@/plugins/electronStore";
 import { RxDBDevModePlugin } from "rxdb/plugins/dev-mode";
 import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election";
 import { RxDBMigrationPlugin } from "rxdb/plugins/migration";
@@ -19,8 +24,8 @@ import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder";
 import { RxDBReplicationPlugin } from "rxdb/plugins/replication";
 import { RxDBValidatePlugin } from "rxdb/plugins/validate";
 import clientSchema from "@/schemas/Client.schema";
-import personalSchema from "@/schemas/Personal.schema";
 import projectSchema from "@/schemas/Project.schema";
+import scheduleSchema from "@/schemas/Schedule.schema";
 import taskSchema from "@/schemas/Task.schema";
 import timeSchema from "@/schemas/Time.schema";
 import { v4 as uuidv4 } from "uuid";
@@ -46,23 +51,49 @@ const collections = [
     {
         name: "clients",
         schema: clientSchema,
+        methods: {
+            className(this: RxClientDocument): string {
+                return "client";
+            }
+        }
     },
     {
         name: "projects",
         schema: projectSchema,
+        methods: {
+            className(this: RxProjectDocument): string {
+                return "project";
+            }
+        }
     },
     {
         name: "tasks",
         schema: taskSchema,
+        methods: {
+            className(this: RxTaskDocument): string {
+                return "task";
+            }
+        }
     },
     {
-        name: "personals",
-        schema: personalSchema,
-        sync: true,
+        name: "schedules",
+        schema: scheduleSchema,
+        methods: {
+            getRelated(this: RxScheduleDocument): Promise<any>|null|undefined {
+                if(this.clientId)
+                    return this.clientId_;
+                if(this.projectId)
+                    return this.projectId_;
+                if(this.taskId)
+                    return this.taskId_;
+                return null;
+            },
+            className(this: RxScheduleDocument): string {
+                return "schedule";
+            }
+        }
     },
 ];
-
-const syncURL = "http://" + window.location.hostname + ":10101/";
 
 /**
  * creates the database
@@ -151,11 +182,19 @@ async function _create(): Promise<RxItemsDatabase> {
                     this.dolibarrId != ""
                 );
             },
+
+            className(this: RxTimeDocument): string {
+                return "time";
+            }
         },
     });
 
     // hooks
     db.collections.times.preInsert((docObj: RxTimeDocumentType) => {
+        docObj.id = uuidv4();
+    }, true);
+    
+    db.collections.schedules.preInsert((docObj: RxScheduleDocumentType) => {
         docObj.id = uuidv4();
     }, true);
 

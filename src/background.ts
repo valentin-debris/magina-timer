@@ -30,10 +30,7 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 let mainWindow: BrowserWindow;
-let popupIdleWindow: BrowserWindow | null;
-let prefWindow: BrowserWindow | null;
-let exportWindow: BrowserWindow | null;
-
+let subWindows: { [key: string]: BrowserWindow|null } = {};
 let appIcon;
 
 function createSubWindow(nameFile: string, onTop = false, w = 350, h = 500) {
@@ -111,22 +108,26 @@ async function createMainWindow() {
     });
 
     ipcMain.handle("openPopupIdle", () => {
-        if (!popupIdleWindow) {
-            popupIdleWindow = createSubWindow("popupIdle", true, 400, 300);
+        if (!subWindows["popupIdle"]) {
+            subWindows["popupIdle"] = createSubWindow("popupIdle", true, 400, 300);
         }
     });
 
     ipcMain.handle("closeWindow", (e, typeWindow: string) => {
-        if (typeWindow == "popupIdle" && popupIdleWindow) {
-            popupIdleWindow.close();
-            popupIdleWindow = null;
-        } else if (typeWindow == "preferences" && prefWindow) {
-            prefWindow.close();
-            prefWindow = null;
-        } else if (typeWindow == "timeExport" && exportWindow) {
-            exportWindow.close();
-            exportWindow = null;
+        if(subWindows[typeWindow] != null) {
+            subWindows[typeWindow]!.close();
+            subWindows[typeWindow] = null;
         }
+        // if (typeWindow == "popupIdle" && popupIdleWindow) {
+        //     popupIdleWindow.close();
+        //     popupIdleWindow = null;
+        // } else if (typeWindow == "preferences" && prefWindow) {
+        //     prefWindow.close();
+        //     prefWindow = null;
+        // } else if (typeWindow == "timeExport" && exportWindow) {
+        //     exportWindow.close();
+        //     exportWindow = null;
+        // }
     });
 
     ipcMain.handle("show_foreground", () => {
@@ -141,7 +142,7 @@ async function createMainWindow() {
                 {
                     label: "Préférences",
                     click: function() {
-                        prefWindow = createSubWindow("preferences");
+                        subWindows["preferences"] = createSubWindow("preferences");
                     },
                 },
                 {
@@ -166,10 +167,21 @@ async function createMainWindow() {
                 {
                     label: "Export",
                     click: function() {
-                        exportWindow = createSubWindow(
+                        subWindows["timeExport"] = createSubWindow(
                             "timeExport",
                             false,
                             350,
+                            560
+                        );
+                    },
+                },
+                {
+                    label: "Planning",
+                    click: function() {
+                        subWindows["planning"] = createSubWindow(
+                            "planning",
+                            false,
+                            700,
                             560
                         );
                     },
@@ -193,7 +205,7 @@ async function createMainWindow() {
                 {
                     label: "Docs",
                     click: function() {
-                        popupIdleWindow = createSubWindow(
+                        subWindows["popupIdle"] = createSubWindow(
                             "popupIdle",
                             true,
                             400,

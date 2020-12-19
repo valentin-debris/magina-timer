@@ -13,10 +13,13 @@ export interface RxClientDocumentType {
   existRemote: number;
 }
 // ORM methods
-// interface RxClientDocMethods {}
-export type RxClientDocument = RxDocument<RxClientDocumentType, {}>;
+interface RxClientDocMethods {
+  className(): string;
+}
 
-export type RxClientCollection = RxCollection<RxClientDocumentType, {}, {}>;
+export type RxClientDocument = RxDocument<RxClientDocumentType, RxClientDocMethods>;
+
+export type RxClientCollection = RxCollection<RxClientDocumentType, RxClientDocMethods, {}>;
 
 export interface RxClientsCollections {
   clients: RxClientCollection;
@@ -34,10 +37,13 @@ export interface RxProjectDocumentType {
   existRemote: number;
 }
 // ORM methods
-// interface RxProjectDocMethods {}
-export type RxProjectDocument = RxDocument<RxProjectDocumentType, {}>;
+interface RxProjectDocMethods {
+  className(): string;
+}
 
-export type RxProjectCollection = RxCollection<RxProjectDocumentType, {}, {}>;
+export type RxProjectDocument = RxDocument<RxProjectDocumentType, RxProjectDocMethods>;
+
+export type RxProjectCollection = RxCollection<RxProjectDocumentType, RxProjectDocMethods, {}>;
 
 export interface RxProjectsCollections {
   projects: RxProjectCollection;
@@ -57,10 +63,13 @@ export interface RxTaskDocumentType {
   existRemote: number;
 }
 // ORM methods
-// interface RxTaskDocMethods {}
-export type RxTaskDocument = RxDocument<RxTaskDocumentType, {}>;
+interface RxTaskDocMethods {
+  className(): string;
+}
 
-export type RxTaskCollection = RxCollection<RxTaskDocumentType, {}, {}>;
+export type RxTaskDocument = RxDocument<RxTaskDocumentType, RxTaskDocMethods>;
+
+export type RxTaskCollection = RxCollection<RxTaskDocumentType, RxTaskDocMethods, {}>;
 
 export interface RxTasksCollections {
   tasks: RxTaskCollection;
@@ -92,6 +101,7 @@ interface RxTimeDocMethods {
   getTimeStart(): string;
   getTimeEnd(): string;
   isSync(): boolean;
+  className(): string;
 }
 export type RxTimeDocument = RxDocument<RxTimeDocumentType, RxTimeDocMethods>;
 
@@ -106,6 +116,37 @@ export interface RxTimesCollections {
 }
 
 /**
+ * ================ SCHEDULE ===============
+ */
+export interface RxScheduleDocumentType {
+  id: string;
+  title: string;
+  duration: number;
+  clientId: string;
+  clientId_?: Promise<RxClientDocument>;
+  projectId: string;
+  projectId_?: Promise<RxProjectDocument>;
+  taskId: string;
+  taskId_?: Promise<RxTaskDocument>;
+}
+// ORM methods
+interface RxScheduleDocMethods {
+  getRelated(): Promise<RxDocument>;
+  className(): string;
+}
+export type RxScheduleDocument = RxDocument<RxScheduleDocumentType, RxScheduleDocMethods>;
+
+export type RxScheduleCollection = RxCollection<
+  RxScheduleDocumentType,
+  RxScheduleDocMethods,
+  {}
+>;
+
+export interface RxSchedulesCollections {
+  schedules: RxScheduleCollection;
+}
+
+/**
  * ================ GLOBAL ===============
  */
 
@@ -114,5 +155,6 @@ export interface RxItemsCollections {
   projects: RxProjectCollection;
   tasks: RxTaskCollection;
   times: RxTimeCollection;
+  schedules: RxScheduleCollection;
 }
 export type RxItemsDatabase = RxDatabase<RxItemsCollections>;

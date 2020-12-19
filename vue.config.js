@@ -24,6 +24,10 @@ module.exports = {
             entry: "src/main.ts",
             title: "Magina Timer",
         },
+        planning: {
+            entry: "src/subpages/planning.ts",
+            title: "MGT - Planning",
+        },
         popupIdle: {
             entry: "src/subpages/popupIdle.ts",
             title: "MGT - WAKE UP !",
