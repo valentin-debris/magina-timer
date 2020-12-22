@@ -186,6 +186,17 @@ async function createMainWindow() {
                         );
                     },
                 },
+                {
+                    label: "Favoris",
+                    click: function() {
+                        subWindows["favorite"] = createSubWindow(
+                            "favorite",
+                            false,
+                            700,
+                            560
+                        );
+                    },
+                },
             ],
         },
         {

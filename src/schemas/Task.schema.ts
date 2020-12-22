@@ -28,7 +28,7 @@ const schema: RxJsonSchema = {
         },
         existRemote: {
             type: "integer",
-        },
+        }
     },
     required: ["refPropal", "projectId"],
     indexes: ["refPropal", "projectId"],

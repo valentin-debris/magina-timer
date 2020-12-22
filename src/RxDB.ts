@@ -147,6 +147,30 @@ export interface RxSchedulesCollections {
 }
 
 /**
+ * ================ FAVORITE ===============
+ */
+export interface RxFavoriteDocumentType {
+  position: number;
+  taskId: string;
+  taskId_?: Promise<RxTaskDocument>;
+}
+// ORM methods
+interface RxFavoriteDocMethods {
+  // className(): string;
+}
+export type RxFavoriteDocument = RxDocument<RxFavoriteDocumentType, RxFavoriteDocMethods>;
+
+export type RxFavoriteCollection = RxCollection<
+  RxFavoriteDocumentType,
+  RxFavoriteDocMethods,
+  {}
+>;
+
+export interface RxFavoritesCollections {
+  favorites: RxFavoriteCollection;
+}
+
+/**
  * ================ GLOBAL ===============
  */
 
@@ -156,5 +180,6 @@ export interface RxItemsCollections {
   tasks: RxTaskCollection;
   times: RxTimeCollection;
   schedules: RxScheduleCollection;
+  favorites: RxFavoriteCollection;
 }
 export type RxItemsDatabase = RxDatabase<RxItemsCollections>;

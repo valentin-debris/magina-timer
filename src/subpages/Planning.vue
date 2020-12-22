@@ -7,6 +7,7 @@
                 <v-data-table
                     :headers="headerTable"
                     :items="schedules"
+                    mobile-breakpoint="1"
                     class="elevation-1"
                 >
                     <template v-slot:top>
@@ -521,8 +522,6 @@ export default class Planning extends Vue {
         this.editedIndex = this.schedules.indexOf(item);
         this.editedItem = Object.assign({}, item);
         this.editedItem.limit = parseFloat((this.editedItem.limit/3600).toFixed(1));
-        // item.obj?.className();
-        // this.selectedAll = 
         
         if(this.editedItem.obj) {
             //@ts-ignore
@@ -538,7 +537,7 @@ export default class Planning extends Vue {
     }
 
     public async deleteItem (item: CustomSchedule) {
-        if(confirm('Are you sure you want to delete this item?')) {
+        if(confirm('Supprimer cette limite ?')) {
             const sched = await this.db.schedules.findOne({
                 selector: {
                     id: item.id

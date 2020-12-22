@@ -3,6 +3,7 @@ import * as PouchdbAdapterIdb from "pouchdb-adapter-idb";
 
 import {
     RxClientDocument,
+    RxFavoriteDocumentType,
     RxItemsCollections,
     RxItemsDatabase,
     RxProjectDocument,
@@ -10,7 +11,7 @@ import {
     RxScheduleDocumentType,
     RxTaskDocument,
     RxTimeDocument,
-    RxTimeDocumentType,
+    RxTimeDocumentType
 } from "@/RxDB";
 import { addRxPlugin, createRxDatabase } from "rxdb/plugins/core";
 
@@ -24,6 +25,7 @@ import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder";
 import { RxDBReplicationPlugin } from "rxdb/plugins/replication";
 import { RxDBValidatePlugin } from "rxdb/plugins/validate";
 import clientSchema from "@/schemas/Client.schema";
+import favoriteSchema from "@/schemas/Favorite.schema";
 import projectSchema from "@/schemas/Project.schema";
 import scheduleSchema from "@/schemas/Schedule.schema";
 import taskSchema from "@/schemas/Task.schema";
@@ -93,6 +95,10 @@ const collections = [
             }
         }
     },
+    {
+        name: "favorites",
+        schema: favoriteSchema,
+    },
 ];
 
 /**
@@ -113,7 +119,8 @@ async function _create(): Promise<RxItemsDatabase> {
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     (window as any).db = db; // write to window for debugging
 
-    // create collections
+    // create collections 
+    //@ts-ignore
     await Promise.all(collections.map((colData) => db.collection(colData)));
 
     await db.collection({
