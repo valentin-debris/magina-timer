@@ -150,6 +150,7 @@ export interface RxSchedulesCollections {
  * ================ FAVORITE ===============
  */
 export interface RxFavoriteDocumentType {
+  title: string;
   position: number;
   taskId: string;
   taskId_?: Promise<RxTaskDocument>;

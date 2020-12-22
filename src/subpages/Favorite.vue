@@ -13,7 +13,7 @@
                     <template v-slot:top>
                         <v-dialog
                             v-model="dialog"
-                            max-width="800px"
+                            max-width="450px"
                             >
                             
                             <v-card>
@@ -25,8 +25,13 @@
                                     <v-container>
                                         <v-form ref="form">
                                             <v-row>
-                                                <Selectors :task="task" @change-task="onChangeTask" />
+                                                <v-text-field
+                                                v-model="editedItem.title"
+                                                label="Titre"
+                                                dense
+                                                ></v-text-field>
                                             </v-row>
+                                            <Selectors :task="task" @change-task="onChangeTask" />
                                         </v-form>
                                     </v-container>
                                 </v-card-text>
@@ -54,7 +59,7 @@
 
                     <template v-slot:item.actions="{ item }">
                         <template 
-                            v-if="item.task"
+                            v-if="item.tkTitle"
                         >
                             <v-icon
                                 small
@@ -107,6 +112,7 @@ import { RxDatabase } from "rxdb";
 export interface CustomFavorite {
     shortcut: string;
     title: string;
+    tkTitle: string;
     obj: RxFavoriteDocument | null;
 }
 
@@ -120,7 +126,8 @@ export default class Favorite extends Vue {
     private favorites: CustomFavorite[] = [];
     private headerTable = [
         { text: "Raccourci", value: "shortcut", sortable: false }, 
-        { text: "Tâche", value: "title", sortable: false }, 
+        { text: "Titre", value: "title", sortable: false }, 
+        { text: "Tâche", value: "tkTitle", sortable: false }, 
         { text: 'Actions', value: 'actions', sortable: false }
     ];
     
@@ -130,11 +137,13 @@ export default class Favorite extends Vue {
     private editedItem: CustomFavorite = {
         shortcut : "",
         title: "",
+        tkTitle: "",
         obj: null
     };
     private defaultItem: CustomFavorite = {
         shortcut : "",
         title: "",
+        tkTitle: "",
         obj: null
     };
     private dialog = false;
@@ -167,14 +176,15 @@ export default class Favorite extends Vue {
                     items.map(async (i) => {
                         console.log("fav found : "+i.position);
                         const tk =  await i.taskId_;
-                        this.favorites[i.position-1].title = await this.generateTitle(tk!);
+                        this.favorites[i.position-1].title = i.title;
+                        this.favorites[i.position-1].tkTitle = await this.generateTkTitle(tk!);
                         this.favorites[i.position-1].obj = i;
                     })
                 )
             })
     }
 
-    public async generateTitle(item: RxTaskDocument) {
+    public async generateTkTitle(item: RxTaskDocument) {
         if(!item) {
             return "-";
         }
@@ -204,6 +214,7 @@ export default class Favorite extends Vue {
         if(this.selectedTask) {
             console.log("ind "+this.editedIndex);
             const obj = {
+                title: this.editedItem.title,
                 position: this.editedIndex+1,
                 taskId: this.selectedTask.id
             }
@@ -215,6 +226,9 @@ export default class Favorite extends Vue {
     }
 
     public async editItem (item: CustomFavorite) {
+        this.task = null;
+        if(item.obj)
+            this.task = await item.obj.taskId_!;
         this.editedIndex = this.favorites.indexOf(item);
         this.editedItem = Object.assign({}, item);
         

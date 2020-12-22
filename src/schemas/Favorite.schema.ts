@@ -6,6 +6,9 @@ const schema: RxJsonSchema = {
   version: 0,
   type: "object",
   properties: {
+    title: {
+      type: "string"
+    },
     position: { //Used for shortcut, between 1-9
       type: "integer",
     },
