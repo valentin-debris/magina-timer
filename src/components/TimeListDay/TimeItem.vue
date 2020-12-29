@@ -67,7 +67,7 @@ export default class TimeItem extends Vue {
 
     public async startTimeFromHere() {
         const db = await DatabaseService.get();
-        DatabaseService.stopCurrent(); //Test if working
+        await DatabaseService.stopCurrent();
 
         const obj = DatabaseService.getNewTimeObj();
         obj.isCurrent = 1;

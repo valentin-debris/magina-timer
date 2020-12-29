@@ -77,95 +77,7 @@
                 </v-col>
             </v-row>
 
-            <v-row>
-                <v-autocomplete
-                    ref="acplAll"
-                    label="Recherche globale"
-                    v-model="selectedAll"
-                    auto-select-first
-                    chips
-                    clearable
-                    :items="allItems"
-                    item-text="title"
-                    item-value="id"
-                    return-object
-                    :search-input.sync="searchString"
-                    @change="onChangeAll"
-                >
-                </v-autocomplete>
-            </v-row>
-
-            <v-row>
-                <v-autocomplete
-                    ref="acplCl"
-                    label="Client"
-                    v-model="selectedCl"
-                    auto-select-first
-                    chips
-                    clearable
-                    :items="clients"
-                    item-text="title"
-                    item-value="id"
-                    return-object
-                ></v-autocomplete>
-            </v-row>
-
-            <v-row>
-                <v-autocomplete
-                    ref="acplPj"
-                    label="Projet"
-                    v-model="selectedPj"
-                    auto-select-first
-                    chips
-                    clearable
-                    :items="projects"
-                    item-value="id"
-                    return-object
-                >
-                    <template v-slot:item="data">
-                        {{ data.item.ref }} {{ data.item.title }}
-                    </template>
-                    <template v-slot:selection="data">
-                        <v-chip
-                            v-bind="data.attrs"
-                            :input-value="data.selected"
-                            @click="data.select"
-                            @click:close="remove(data.item)"
-                        >
-                            {{ data.item.ref }} {{ data.item.title }}
-                        </v-chip>
-                    </template>
-                </v-autocomplete>
-            </v-row>
-
-            <v-row>
-                <v-autocomplete
-                    ref="acplTk"
-                    label="Tâche"
-                    v-model="selectedTk"
-                    auto-select-first
-                    chips
-                    clearable
-                    hide-details
-                    :items="tasks"
-                    item-value="id"
-                    return-object
-                >
-                    <template v-slot:item="data">
-                        {{ data.item.refPropal }} {{ data.item.title }}
-                    </template>
-                    <template v-slot:selection="data">
-                        <v-chip
-                            v-bind="data.attrs"
-                            :input-value="data.selected"
-                            @click="data.select"
-                            @click:close="remove(data.item)"
-                        >
-                            {{ data.item.refPropal }} {{ data.item.title }}
-                        </v-chip>
-                    </template>
-                </v-autocomplete>
-            </v-row>
+            <Selectors :task="task" @change-task="onChangeTask" />
             <br />
 
             <v-btn text icon x-large color="white" @click="updateTime">
@@ -180,7 +92,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import {
     RxClientDocument,
     RxItemsCollections,
@@ -189,12 +101,12 @@ import {
     RxTimeDocument,
 } from "@/RxDB";
 
+import Selectors from "@/components/Panel/Selectors.vue";
 import DatabaseService from "@/plugins/database";
 import Dolibarr from "@/plugins/dolibarr";
 import EventBus from "@/plugins/eventBus";
 import { RxDatabase } from "rxdb";
 import { Subscription } from "rxjs";
-import TimeItem from "../TimeListDay/TimeItem.vue";
 
 export interface CustomItem {
     type: string;
@@ -204,7 +116,7 @@ export interface CustomItem {
 }
 
 @Component({
-    components: { TimeItem },
+    components: { Selectors },
 })
 export default class Panel extends Vue {
     private time: RxTimeDocument | null = null;
@@ -212,21 +124,8 @@ export default class Panel extends Vue {
     private headerDescs = [{ text: "titre", value: "title" }];
     private lastTimes: CustomItem[] = [];
 
-    private allItems: CustomItem[] = [];
-    private selectedAll: CustomItem | null = null;
-    private searchString = "";
-
-    private clients: RxClientDocument[] = [];
-    private selectedCl: RxClientDocument | null = null;
-
-    private projects: RxProjectDocument[] = [];
-    private selectedPj: RxProjectDocument | null = null;
-
-    private tasks: RxTaskDocument[] = [];
-    private selectedTk: RxTaskDocument | null = null;
-
-    private allProjects: RxProjectDocument[] = [];
-    private allTasks: RxTaskDocument[] = [];
+    private task: RxTaskDocument | null = null;
+    private taskId = "";
 
     private description = "";
     private start = "00:00";
@@ -237,10 +136,14 @@ export default class Panel extends Vue {
 
     private setupDone = false;
     private db!: RxDatabase<RxItemsCollections>;
-    private subCl: Subscription | null = null;
-    private subPj: Subscription | null = null;
-    private subTk: Subscription | null = null;
     private subTs: Subscription | null = null;
+
+    public onChangeTask(tk: RxTaskDocument) {
+        this.taskId = "";
+        if(tk){
+            this.taskId = tk.id;
+        }
+    }
 
     public clickOutsidePanel(e: MouseEvent) {
         if (this.setupDone == false || !this.time) return;
@@ -267,87 +170,13 @@ export default class Panel extends Vue {
             this.description = t.title;
 
             if (t.isPersonal) {
-                this.selectedTk = null;
-                this.selectedPj = null;
-                this.selectedCl = null;
+                this.task = null;
             } else {
-                this.selectedTk = await t.taskId_!;
-                this.selectedPj = await this.selectedTk!.projectId_;
-                this.selectedCl = await this.selectedPj!.clientId_;
+                this.task = await t.taskId_!;
             }
-
-            await this.setupSelects();
             this.setupDone = true;
         }
         this.openLastTimes = false;
-    }
-
-    public async onChangeAll(item: CustomItem) {
-        if (this.setupDone == false || !item) return;
-        this.setupDone = false;
-
-        this.selectedCl = null;
-        this.selectedPj = null;
-        this.selectedTk = null;
-        if (item.type == "client") {
-            // @ts-ignore
-            this.selectedCl = item.obj;
-        } else if (item.type == "project") {
-            // @ts-ignore
-            this.selectedPj = item.obj;
-            this.selectedCl = await this.selectedPj!.clientId_;
-        } else if (item.type == "task") {
-            // @ts-ignore
-            this.selectedTk = item.obj;
-            this.selectedPj = await this.selectedTk!.projectId_;
-            this.selectedCl = await this.selectedPj!.clientId_;
-        }
-        await this.setupSelects();
-
-        this.$nextTick(() => {
-            this.searchString = "";
-            this.selectedAll = null;
-            if (this.$refs.acplAll)
-                //@ts-ignore
-                this.$refs.acplAll.blur();
-        });
-
-        this.setupDone = true;
-    }
-
-    @Watch("selectedCl")
-    async onChangeClient(item: RxClientDocument) {
-        if (this.setupDone == false) return;
-
-        this.setupDone = false;
-        this.selectedPj = null;
-        this.selectedTk = null;
-        await this.setupProjects(item);
-
-        if (this.$refs.acplCl)
-            //@ts-ignore
-            this.$refs.acplCl.blur();
-        this.setupDone = true;
-    }
-
-    @Watch("selectedPj")
-    async onChangeProject(item: RxProjectDocument) {
-        if (this.setupDone == false) return;
-
-        this.setupDone = false;
-        this.selectedTk = null;
-        await this.setupTasks(item);
-        if (this.$refs.acplPj)
-            //@ts-ignore
-            this.$refs.acplPj.blur();
-        this.setupDone = true;
-    }
-
-    @Watch("selectedTk")
-    async onChangeTask() {
-        if (this.$refs.acplTk)
-            //@ts-ignore
-            this.$refs.acplTk.blur();
     }
 
     public async mounted() {
@@ -361,74 +190,6 @@ export default class Panel extends Vue {
             this.time = item;
             await this.initPanel();
         });
-
-        this.subCl = this.db.clients
-            .find()
-            .sort({
-                title: "asc",
-            })
-            .$.subscribe((clients: RxClientDocument[]) => {
-                if (clients) {
-                    this.clients = clients;
-                    clients.forEach((i) => {
-                        this.allItems.push({
-                            type: "client",
-                            id: i.id,
-                            title: "CL - " + i.title,
-                            obj: i,
-                        });
-                    });
-                }
-            });
-        this.subPj = this.db.projects
-            .find()
-            .sort({
-                title: "asc",
-            })
-            .$.subscribe((projects: RxProjectDocument[]) => {
-                if (projects) {
-                    projects.forEach((i) => {
-                        this.allItems.push({
-                            type: "project",
-                            id: i.id,
-                            title: i.ref + " " + i.title,
-                            obj: i,
-                        });
-                        const itemId = parseInt(i.clientId);
-                        if (!this.allProjects[itemId]) {
-                            //@ts-ignore
-                            this.allProjects[itemId] = [];
-                        }
-
-                        //@ts-ignore
-                        this.allProjects[itemId].push(i);
-                    });
-                }
-            });
-        this.subTk = this.db.tasks
-            .find()
-            .sort({
-                refPropal: "asc",
-            })
-            .$.subscribe((tasks: RxTaskDocument[]) => {
-                if (tasks) {
-                    tasks.forEach((i) => {
-                        this.allItems.push({
-                            type: "task",
-                            id: i.id,
-                            title: i.refPropal + " " + i.title,
-                            obj: i,
-                        });
-                        const itemId = parseInt(i.projectId);
-                        if (!this.allTasks[itemId]) {
-                            //@ts-ignore
-                            this.allTasks[itemId] = [];
-                        }
-                        //@ts-ignore
-                        this.allTasks[itemId].push(i);
-                    });
-                }
-            });
 
         this.subTs = this.db.times
             .findOne({
@@ -508,15 +269,6 @@ export default class Panel extends Vue {
     }
 
     public beforeDestroy() {
-        if (this.subCl) {
-            this.subCl.unsubscribe();
-        }
-        if (this.subPj) {
-            this.subPj.unsubscribe();
-        }
-        if (this.subTk) {
-            this.subTk.unsubscribe();
-        }
         if (this.subTs) {
             this.subTs.unsubscribe();
         }
@@ -531,58 +283,14 @@ export default class Panel extends Vue {
         this.date = this.time.getFullDate();
         this.start = this.time.getTimeStart();
         this.end = this.time.getTimeEnd();
-
-        this.selectedCl = null;
-        this.selectedPj = null;
-        this.selectedTk = null;
+        
+        this.task = null;
 
         if (this.time.taskId && this.time.taskId != "0") {
-            this.selectedTk = await this.time.taskId_!;
-            this.selectedPj = await this.selectedTk.projectId_;
-            this.selectedCl = await this.selectedPj.clientId_;
+            this.task = await this.time.taskId_!
         }
-
-        await this.setupSelects();
-        this.setupDone = true;
-    }
-
-    public async setupSelects() {
-        this.setupDone = false;
-
-        await this.setupProjects(this.selectedCl);
 
         this.setupDone = true;
-    }
-
-    public async setupProjects(parent: RxClientDocument | null) {
-        if (parent) {
-            //@ts-ignore
-            this.projects = this.allProjects[parseInt(parent.id)];
-
-            if (this.projects && this.projects.length == 1) {
-                this.selectedPj = this.projects[0];
-            }
-            await this.setupTasks(this.selectedPj);
-        } else {
-            this.projects = [];
-            this.selectedPj = null;
-            this.tasks = [];
-            this.selectedTk = null;
-        }
-    }
-
-    public async setupTasks(parent: RxProjectDocument | null) {
-        if (parent) {
-            //@ts-ignore
-            this.tasks = this.allTasks[parseInt(parent.id)];
-
-            if (this.tasks && this.tasks.length == 1) {
-                this.selectedTk = this.tasks[0];
-            }
-        } else {
-            this.tasks = [];
-            this.selectedTk = null;
-        }
     }
 
     public async updateTime() {
@@ -596,7 +304,7 @@ export default class Panel extends Vue {
         dateDay.setUTCHours(0, 0, secStart, 0);
         const tsDay = parseInt("" + dateDay.getTime() / 1000, 10);
 
-        const taskId = this.selectedTk?.id;
+        const taskId = this.taskId;
 
         await this.time.atomicUpdate((t) => {
             t.title = this.description;
@@ -746,8 +454,8 @@ export default class Panel extends Vue {
             }
         }
     }
-    .v-autocomplete {
-        ::v-deep .v-select__slot {
+    ::v-deep .v-autocomplete {
+         .v-select__slot {
             background: var(--v-primary-base);
 
             .chip--select {
