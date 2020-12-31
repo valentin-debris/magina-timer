@@ -30,10 +30,40 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 let mainWindow: BrowserWindow;
-let subWindows: { [key: string]: BrowserWindow|null } = {};
+let subWindows: { [key: string]: BrowserWindow | null } = {};
 let appIcon;
 
-function createSubWindow(nameFile: string, onTop = false, w = 350, h = 500) {
+function createSubWindowGlob(nameFile: string) {
+    let onTop = false;
+    let w = 350;
+    let h = 560;
+
+    switch (nameFile) {
+        case "popupIdle":
+            onTop = true;
+            w = 400;
+            h = 300;
+            break;
+        case "timeExport":
+            h = 560;
+            break;
+        case "planning":
+            w = 700;
+            break;
+        case "favorite":
+            w = 700;
+            break;
+    }
+
+    return createSubWindow(nameFile, onTop, w, h);
+}
+
+function createSubWindow(
+    nameFile: string,
+    onTop: boolean,
+    w: number,
+    h: number
+) {
     // Create the browser window.
     let window = new BrowserWindow({
         width: w,
@@ -107,27 +137,19 @@ async function createMainWindow() {
         return false;
     });
 
-    ipcMain.handle("openPopupIdle", () => {
-        if (!subWindows["popupIdle"]) {
-            subWindows["popupIdle"] = createSubWindow("popupIdle", true, 400, 300);
+    ipcMain.handle("openWindow", (e, typeWindow: string) => {
+        if (!subWindows[typeWindow]) {
+            subWindows[typeWindow] = createSubWindowGlob(typeWindow);
+        } else {
+            subWindows[typeWindow]!.show();
         }
     });
 
     ipcMain.handle("closeWindow", (e, typeWindow: string) => {
-        if(subWindows[typeWindow] != null) {
+        if (subWindows[typeWindow] != null) {
             subWindows[typeWindow]!.close();
             subWindows[typeWindow] = null;
         }
-        // if (typeWindow == "popupIdle" && popupIdleWindow) {
-        //     popupIdleWindow.close();
-        //     popupIdleWindow = null;
-        // } else if (typeWindow == "preferences" && prefWindow) {
-        //     prefWindow.close();
-        //     prefWindow = null;
-        // } else if (typeWindow == "timeExport" && exportWindow) {
-        //     exportWindow.close();
-        //     exportWindow = null;
-        // }
     });
 
     ipcMain.handle("show_foreground", () => {
@@ -142,7 +164,9 @@ async function createMainWindow() {
                 {
                     label: "Préférences",
                     click: function() {
-                        subWindows["preferences"] = createSubWindow("preferences");
+                        subWindows["preferences"] = createSubWindowGlob(
+                            "preferences"
+                        );
                     },
                 },
                 {
@@ -167,33 +191,24 @@ async function createMainWindow() {
                 {
                     label: "Export",
                     click: function() {
-                        subWindows["timeExport"] = createSubWindow(
-                            "timeExport",
-                            false,
-                            350,
-                            560
+                        subWindows["timeExport"] = createSubWindowGlob(
+                            "timeExport"
                         );
                     },
                 },
                 {
                     label: "Planning",
                     click: function() {
-                        subWindows["planning"] = createSubWindow(
-                            "planning",
-                            false,
-                            700,
-                            560
+                        subWindows["planning"] = createSubWindowGlob(
+                            "planning"
                         );
                     },
                 },
                 {
                     label: "Favoris",
                     click: function() {
-                        subWindows["favorite"] = createSubWindow(
-                            "favorite",
-                            false,
-                            700,
-                            560
+                        subWindows["favorite"] = createSubWindowGlob(
+                            "favorite"
                         );
                     },
                 },
@@ -216,11 +231,8 @@ async function createMainWindow() {
                 {
                     label: "Docs",
                     click: function() {
-                        subWindows["popupIdle"] = createSubWindow(
-                            "popupIdle",
-                            true,
-                            400,
-                            300
+                        subWindows["popupIdle"] = createSubWindowGlob(
+                            "popupIdle"
                         );
                         // shell.openExternal(
                         //     "https://developers.magina.fr/documentation/magina-timer/"

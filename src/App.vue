@@ -103,7 +103,7 @@ export default class App extends Vue {
             }
         });
 
-        document.addEventListener('keydown', this.handleShortcuts.bind(this));
+        document.addEventListener("keydown", this.handleShortcuts.bind(this));
 
         if (this.intervalIdle) {
             clearInterval(this.intervalIdle);
@@ -156,7 +156,7 @@ export default class App extends Vue {
             this.timeCurrent &&
             remote.powerMonitor.getSystemIdleTime() > prefAwayDelay * 60
         ) {
-            await ipcRenderer.invoke("openPopupIdle");
+            await ipcRenderer.invoke("openWindow", "popupIdle");
         }
     }
 
@@ -210,22 +210,24 @@ export default class App extends Vue {
     }
 
     public async handleShortcuts(e: KeyboardEvent) {
-        if((e.ctrlKey || e.metaKey) && e.code.startsWith("Digit")) {
+        if ((e.ctrlKey || e.metaKey) && e.code.startsWith("Digit")) {
             e.preventDefault();
             const digit = parseInt(e.code.replace("Digit", ""));
 
             const obj = DatabaseService.getNewTimeObj();
             obj.isCurrent = 1;
-            if(digit == 0) {
+            if (digit == 0) {
                 obj.isPersonal = 1;
             } else {
-                const favT = await this.db.favorites.findOne({
-                    selector: {
-                        position: digit
-                    }
-                }).exec();
+                const favT = await this.db.favorites
+                    .findOne({
+                        selector: {
+                            position: digit,
+                        },
+                    })
+                    .exec();
 
-                if(favT) {
+                if (favT) {
                     obj.taskId = favT.taskId;
                 } else {
                     return;
@@ -237,7 +239,7 @@ export default class App extends Vue {
     }
 
     public beforeDestroy() {
-        document.removeEventListener('keydown', this.handleShortcuts);
+        document.removeEventListener("keydown", this.handleShortcuts);
         if (this.sub) {
             this.sub.unsubscribe();
         }

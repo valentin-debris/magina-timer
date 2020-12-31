@@ -11,11 +11,7 @@
                     class="elevation-1"
                 >
                     <template v-slot:top>
-                        <v-dialog
-                            v-model="dialog"
-                            max-width="450px"
-                            >
-                            
+                        <v-dialog v-model="dialog" max-width="450px">
                             <v-card>
                                 <v-card-title>
                                     <span class="headline">Tâche associé</span>
@@ -26,66 +22,63 @@
                                         <v-form ref="form">
                                             <v-row>
                                                 <v-text-field
-                                                v-model="editedItem.title"
-                                                label="Titre"
-                                                dense
+                                                    v-model="editedItem.title"
+                                                    label="Titre"
+                                                    dense
                                                 ></v-text-field>
                                             </v-row>
-                                            <Selectors :task="task" @change-task="onChangeTask" />
+                                            <Selectors
+                                                :task="task"
+                                                @change-task="onChangeTask"
+                                            />
                                         </v-form>
                                     </v-container>
                                 </v-card-text>
 
                                 <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn
-                                    color="blue darken-1"
-                                    text
-                                    @click="close"
-                                >
-                                    Annuler
-                                </v-btn>
-                                <v-btn
-                                    color="blue darken-1"
-                                    text
-                                    @click="save"
-                                >
-                                    Sauvegarder
-                                </v-btn>
+                                    <v-spacer></v-spacer>
+                                    <v-btn
+                                        color="blue darken-1"
+                                        text
+                                        @click="close"
+                                    >
+                                        Annuler
+                                    </v-btn>
+                                    <v-btn
+                                        color="blue darken-1"
+                                        text
+                                        @click="save"
+                                    >
+                                        Sauvegarder
+                                    </v-btn>
                                 </v-card-actions>
                             </v-card>
                         </v-dialog>
                     </template>
 
                     <template v-slot:item.actions="{ item }">
-                        <template 
-                            v-if="item.tkTitle"
-                        >
-                            <v-icon
-                                small
-                                class="mr-2"
-                                @click="editItem(item)"
-                            >
+                        <template v-if="item.tkTitle">
+                            <v-icon small class="mr-2" @click="editItem(item)">
                                 mdi-pencil
                             </v-icon>
-                            <v-icon
-                                small
-                                @click="deleteItem(item)"
-                            >
+                            <v-icon small @click="deleteItem(item)">
                                 mdi-delete
                             </v-icon>
                         </template>
                         <template v-else>
-                            <v-icon
-                                small
-                                class="mr-2"
-                                @click="editItem(item)"
-                            >
+                            <v-icon small class="mr-2" @click="editItem(item)">
                                 mdi-plus
                             </v-icon>
                         </template>
                     </template>
                 </v-data-table>
+
+                <p>
+                    <i>
+                        Utilisez le raccourci "Ctrl + 0" pour créer une tâche
+                        perso.
+                    </i>
+                </p>
             </template>
         </v-main>
 
@@ -99,11 +92,7 @@
 import { ipcRenderer } from "electron";
 import { Component, Vue } from "vue-property-decorator";
 
-import {
-    RxItemsCollections,
-    RxTaskDocument,
-    RxFavoriteDocument
-} from "@/RxDB";
+import { RxItemsCollections, RxTaskDocument, RxFavoriteDocument } from "@/RxDB";
 import Selectors from "@/components/Panel/Selectors.vue";
 import DatabaseService from "@/plugins/database";
 
@@ -125,30 +114,40 @@ export default class Favorite extends Vue {
 
     private favorites: CustomFavorite[] = [];
     private headerTable = [
-        { text: "Raccourci", value: "shortcut", sortable: false }, 
-        { text: "Titre", value: "title", sortable: false }, 
-        { text: "Tâche", value: "tkTitle", sortable: false }, 
-        { text: 'Actions', value: 'actions', sortable: false }
+        { text: "Raccourci", value: "shortcut", sortable: false },
+        { text: "Titre", value: "title", sortable: false },
+        { text: "Tâche", value: "tkTitle", sortable: false },
+        { text: "Actions", value: "actions", sortable: false },
     ];
-    
+
     private db!: RxDatabase<RxItemsCollections>;
 
     private editedIndex = -1;
     private editedItem: CustomFavorite = {
-        shortcut : "",
+        shortcut: "",
         title: "",
         tkTitle: "",
-        obj: null
+        obj: null,
     };
     private defaultItem: CustomFavorite = {
-        shortcut : "",
+        shortcut: "",
         title: "",
         tkTitle: "",
-        obj: null
+        obj: null,
     };
     private dialog = false;
     private snackbar = false;
     private message = "";
+
+    public created() {
+        window.addEventListener(
+            "beforeunload",
+            function() {
+                //@ts-ignore
+                this.$destroy();
+            }.bind(this)
+        );
+    }
 
     public async mounted() {
         this.db = await DatabaseService.get();
@@ -162,30 +161,31 @@ export default class Favorite extends Vue {
 
     public async generateTableData() {
         this.favorites = [];
-        for(let i=0; i<9; i++) {
+        for (let i = 0; i < 9; i++) {
             const obj = Object.assign({}, this.defaultItem);
-            obj.shortcut = "Ctrl + "+(i+1);
+            obj.shortcut = "Ctrl + " + (i + 1);
             this.favorites[i] = obj;
         }
 
         await this.db.favorites
-            .find().exec()
+            .find()
+            .exec()
             .then(async (items) => {
-                console.log("items : "+items.length);
                 await Promise.all(
                     items.map(async (i) => {
-                        console.log("fav found : "+i.position);
-                        const tk =  await i.taskId_;
-                        this.favorites[i.position-1].title = i.title;
-                        this.favorites[i.position-1].tkTitle = await this.generateTkTitle(tk!);
-                        this.favorites[i.position-1].obj = i;
+                        const tk = await i.taskId_;
+                        this.favorites[i.position - 1].title = i.title;
+                        this.favorites[
+                            i.position - 1
+                        ].tkTitle = await this.generateTkTitle(tk!);
+                        this.favorites[i.position - 1].obj = i;
                     })
-                )
-            })
+                );
+            });
     }
 
     public async generateTkTitle(item: RxTaskDocument) {
-        if(!item) {
+        if (!item) {
             return "-";
         }
         let subTitle = item.title;
@@ -201,61 +201,61 @@ export default class Favorite extends Vue {
     }
 
     public async save() {
-        await this.db.favorites.findOne({selector: {
-            position : this.editedIndex+1
-        }}).exec().then(async (i) => {
-            if(!i)
-                return;
+        await this.db.favorites
+            .findOne({
+                selector: {
+                    position: this.editedIndex + 1,
+                },
+            })
+            .exec()
+            .then(async (i) => {
+                if (!i) return;
 
-            await i.atomicPatch({position: 0});
-            return;
-        });
-    
-        if(this.selectedTask) {
-            console.log("ind "+this.editedIndex);
+                await i.atomicPatch({ position: 0 });
+                return;
+            });
+
+        if (this.selectedTask) {
             const obj = {
                 title: this.editedItem.title,
-                position: this.editedIndex+1,
-                taskId: this.selectedTask.id
-            }
+                position: this.editedIndex + 1,
+                taskId: this.selectedTask.id,
+            };
             this.db.favorites.insert(obj);
         }
-        
+
         this.close();
         await this.generateTableData();
     }
 
-    public async editItem (item: CustomFavorite) {
+    public async editItem(item: CustomFavorite) {
         this.task = null;
-        if(item.obj)
-            this.task = await item.obj.taskId_!;
+        if (item.obj) this.task = await item.obj.taskId_!;
         this.editedIndex = this.favorites.indexOf(item);
         this.editedItem = Object.assign({}, item);
-        
+
         this.dialog = true;
     }
 
-    public async deleteItem (item: CustomFavorite) {
-        if(item.obj && confirm('Supprimer ce favoris ?')) {
+    public async deleteItem(item: CustomFavorite) {
+        if (item.obj && confirm("Supprimer ce favoris ?")) {
             await item.obj.remove();
             await this.generateTableData();
         }
     }
 
-    public close () {
+    public close() {
         this.task = null;
-        this.dialog = false
+        this.dialog = false;
         this.$nextTick(() => {
-            this.editedItem = Object.assign({}, this.defaultItem)
-            this.editedIndex = -1
-        })
+            this.editedItem = Object.assign({}, this.defaultItem);
+            this.editedIndex = -1;
+        });
     }
 
     public async beforeDestroy() {
         await ipcRenderer.invoke("closeWindow", "planning");
     }
-
-
 }
 </script>
 
