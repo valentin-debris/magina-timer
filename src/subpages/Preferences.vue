@@ -101,6 +101,16 @@ export default class Preferences extends Vue {
         Config.set({ preferences: item });
     }
 
+    public created() {
+        window.addEventListener(
+            "beforeunload",
+            function() {
+                //@ts-ignore
+                this.$destroy();
+            }.bind(this)
+        );
+    }
+
     public async mounted() {
         this.pref = Config.get("preferences");
     }

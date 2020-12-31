@@ -175,6 +175,16 @@ export default class TimeExport extends Vue {
     private round = true;
     private showDesc = true;
 
+    public created() {
+        window.addEventListener(
+            "beforeunload",
+            function() {
+                //@ts-ignore
+                this.$destroy();
+            }.bind(this)
+        );
+    }
+
     public async mounted() {
         const dateN = new Date();
         const firstDay = new Date(dateN.getFullYear(), dateN.getMonth(), 1);

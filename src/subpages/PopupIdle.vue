@@ -43,6 +43,16 @@ import DatabaseService from "@/plugins/database";
 export default class PopupIdle extends Vue {
     private dateOpened = new Date();
 
+    public created() {
+        window.addEventListener(
+            "beforeunload",
+            function() {
+                //@ts-ignore
+                this.$destroy();
+            }.bind(this)
+        );
+    }
+
     public mounted() {
         const prefAwayDelay: number = Config.get("preferences.notifAwayDelay");
         this.dateOpened = new Date(
