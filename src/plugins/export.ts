@@ -63,10 +63,11 @@ async function exportHours(
 
         const options = {
             month: "long",
+            year: "numeric",
         };
-        const month = dayT.toLocaleDateString("fr-FR", options);
+        const monthYear = dayT.toLocaleDateString("fr-FR", options);
 
-        updateValue("MOIS : " + month + " 2020", "B3");
+        updateValue("MOIS : " + monthYear, "B3");
         updateValue("Brut mensuel : " + salary, "E3");
         updateValue("Mensualisation heures : " + hours, "E4");
         updateValue("NOM DU SALARIE : " + fullName, "B5");
