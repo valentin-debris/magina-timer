@@ -1,13 +1,16 @@
 import "roboto-fontface/css/roboto/roboto-fontface.css";
 import "@mdi/font/css/materialdesignicons.css";
 
-import { getIntegrations, init } from "@sentry/electron";
+import { getIntegrations, init, configureScope } from "@sentry/electron";
 
 import App from "./App.vue";
 import Vue from "vue";
 import router from "./router";
 import store from "./store";
 import vuetify from "./plugins/vuetify";
+import Config from "./plugins/electronStore";
+
+const isDev = process.env.NODE_ENV !== "production";
 
 Vue.config.productionTip = false;
 //@ts-ignore
@@ -17,13 +20,28 @@ if (getIntegrations && getIntegrations().browser) {
     const VueIntegration = getIntegrations().browser.Vue;
     init({
         dsn: process.env.VUE_APP_CRASH_HOST,
+        environment: isDev ? "development" : "production",
         debug: true,
-        integrations: [new VueIntegration()],
+        integrations: [
+            new VueIntegration({
+                Vue,
+                attachProps: true,
+            }),
+        ],
     });
 } else {
     // We are running in the main process
     init({
-        dsn: process.env.VUE_APP_CRASH_HOSTy,
+        dsn: process.env.VUE_APP_CRASH_HOST,
+        environment: isDev ? "development" : "production",
+    });
+}
+
+if (Config.get("username")) {
+    configureScope(function(scope) {
+        scope.setUser({
+            username: Config.get("username"),
+        });
     });
 }
 

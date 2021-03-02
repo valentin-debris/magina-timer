@@ -6,6 +6,7 @@ const isDev = process.env.NODE_ENV !== "production";
 function init() {
     Sentry.init({
         dsn: process.env.VUE_APP_CRASH_HOST,
+        environment: isDev ? "development" : "production",
     });
     sentryInit = true;
 }

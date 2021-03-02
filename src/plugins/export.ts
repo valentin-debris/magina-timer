@@ -74,9 +74,9 @@ async function exportHours(
 
         const nbDaysInMonth = new Date(
             dayT.getFullYear(),
-            dayT.getMonth(),
+            dayT.getMonth() + 1,
             0
-        ).getDate();
+        ).getDate(); //the "0" will return the last day for the previous month, so upgrade the month with +1 to get the number of days for this month (January == 0)
 
         let numCell = 8; //Cell for first Monday in Excel
         if (dayT.getDay() == 0) {

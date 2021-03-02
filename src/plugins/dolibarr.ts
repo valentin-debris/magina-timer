@@ -1,6 +1,8 @@
 import axios, { AxiosError } from "axios";
 
 import Config from "@/plugins/electronStore";
+import * as Sentry from "@sentry/electron";
+
 import DatabaseService from "./database";
 import { RxCollection } from "rxdb";
 import { RxTimeDocument } from "@/RxDB";
@@ -20,6 +22,13 @@ async function checkCred() {
 }
 
 async function connect(email: string, pwd: string) {
+    Config.set("username", email.split("@")[0]);
+    Sentry.configureScope(function(scope) {
+        scope.setUser({
+            username: Config.get("username"),
+        });
+    });
+
     return axios
         .post("login", {
             login: email,
@@ -228,6 +237,7 @@ async function removeTime(time: RxTimeDocument) {
 
 async function logout() {
     await keytar.deletePassword(keytarService, "api-key");
+    Sentry.configureScope((scope) => scope.setUser(null));
 }
 
 async function getClients() {

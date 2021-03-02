@@ -312,6 +312,7 @@ if (!gotTheLock) {
 
         Sentry.init({
             dsn: process.env.VUE_APP_CRASH_HOST,
+            environment: isDev ? "development" : "production",
         });
 
         await AutoUpdate();

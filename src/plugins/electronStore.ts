@@ -6,6 +6,7 @@ const config = new Store({
         version: "",
         dbName: "",
         today: "",
+        username: "",
         lastCalls: {
             clients: 0,
             projects: 0,

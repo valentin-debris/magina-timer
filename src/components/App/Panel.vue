@@ -140,7 +140,7 @@ export default class Panel extends Vue {
 
     public onChangeTask(tk: RxTaskDocument) {
         this.taskId = "";
-        if(tk){
+        if (tk) {
             this.taskId = tk.id;
         }
     }
@@ -283,11 +283,11 @@ export default class Panel extends Vue {
         this.date = this.time.getFullDate();
         this.start = this.time.getTimeStart();
         this.end = this.time.getTimeEnd();
-        
+
         this.task = null;
 
         if (this.time.taskId && this.time.taskId != "0") {
-            this.task = await this.time.taskId_!
+            this.task = await this.time.taskId_!;
         }
 
         this.setupDone = true;
@@ -455,7 +455,7 @@ export default class Panel extends Vue {
         }
     }
     ::v-deep .v-autocomplete {
-         .v-select__slot {
+        .v-select__slot {
             background: var(--v-primary-base);
 
             .chip--select {
