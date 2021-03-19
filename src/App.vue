@@ -72,18 +72,21 @@ export default class App extends Vue {
         });
 
         ipcRenderer.on("openFromLink", async (event, arg) => {
-            console.log("[APP] OpenFromLink");
-
-            // if(arg.title) {
-            //     form.querySelector('input[name="title"]').value = arg.title;
-            // }
-            // if(arg.projectId) {
-            //     initPanSelects(arg.projectId, "project", true);
-            // } else if(arg.taskId) {
-            //     initPanSelects(arg.taskId, "task", true);
-            // }
+            console.log("[APP] OpenFromLink"); 
             console.log(arg);
-            //TODO-mg improve here when links available (MGC ?)
+            
+            const db = await DatabaseService.get();
+            await DatabaseService.stopCurrent();
+
+            const obj = DatabaseService.getNewTimeObj();
+            obj.isCurrent = 1;
+            obj.title = arg.title;
+            if(arg.taskId) {
+                obj.taskId = arg.taskId;
+            } else {
+                obj.isPersonal = 1;
+            }
+            await db.times.insert(obj);
         });
 
         await this.synchro();
