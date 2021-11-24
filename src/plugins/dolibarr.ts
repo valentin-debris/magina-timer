@@ -1,8 +1,8 @@
+import * as Sentry from "@sentry/electron";
+
 import axios, { AxiosError } from "axios";
 
 import Config from "@/plugins/electronStore";
-import * as Sentry from "@sentry/electron";
-
 import DatabaseService from "./database";
 import { RxCollection } from "rxdb";
 import { RxTimeDocument } from "@/RxDB";
@@ -260,6 +260,11 @@ async function getTimes() {
     return await getData("times", db.times, "/magina/v1/timespents");
 }
 
+async function getHolidays() {
+    const db = await DatabaseService.get();
+    return await getData("holidays", db.holidays, "/magina/v1/holidays");
+}
+
 async function updateDolibarr(time: RxTimeDocument) {
     if (time.isCurrent == 0 && !time.isSync()) {
         if (time.dolibarrId != "") {
@@ -280,7 +285,7 @@ async function updateDolibarr(time: RxTimeDocument) {
                         await createTime(newT);
                     }
                 } else {
-                    await updateTime(time);
+                   await updateTime(time);
                 }
             }
         } else if (time.needRemove) {
@@ -296,6 +301,7 @@ export default {
     getProjects,
     getTasks,
     getTimes,
+    getHolidays,
     connect,
     logout,
     checkCred,

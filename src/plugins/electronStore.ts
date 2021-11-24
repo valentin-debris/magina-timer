@@ -12,6 +12,7 @@ const config = new Store({
             projects: 0,
             tasks: 0,
             times: 0,
+            holidays: 0,
         },
         defaultListingLastDays: 14,
         personalOnly: false,
@@ -37,6 +38,9 @@ const config = new Store({
             store.set("preferences.minimize", true);
             store.set("personalOnly", false);
         },
+        "2.0.7": (store) => {
+            store.set("lastCalls.holidays", 0);
+        }
     },
 });
 

@@ -156,19 +156,44 @@ export interface RxFavoriteDocumentType {
   taskId_?: Promise<RxTaskDocument>;
 }
 // ORM methods
-interface RxFavoriteDocMethods {
-  // className(): string;
-}
-export type RxFavoriteDocument = RxDocument<RxFavoriteDocumentType, RxFavoriteDocMethods>;
+export type RxFavoriteDocument = RxDocument<RxFavoriteDocumentType, {}>;
 
 export type RxFavoriteCollection = RxCollection<
   RxFavoriteDocumentType,
-  RxFavoriteDocMethods,
+  {},
   {}
 >;
 
 export interface RxFavoritesCollections {
   favorites: RxFavoriteCollection;
+}
+
+
+/**
+ * ================ HOLIDAY ===============
+ */
+ export interface RxHolidayDocumentType {
+  id: string;
+  description: string;
+  fullname: string;
+  dateDebut: number;
+  dateFin: number;
+  existRemote: number;
+  needInsert: number;
+  needUpdate: number;
+  needRemove: number;
+}
+
+interface RxHolidayDocMethods {
+  getDateStart(): string;
+  getDateEnd(): string;
+}
+// ORM methods
+
+export type RxHolidayDocument = RxDocument<RxHolidayDocumentType, RxHolidayDocMethods>;
+export type RxHolidayCollection = RxCollection<RxHolidayDocumentType, RxHolidayDocMethods, {}>;
+export interface RxHolidaysCollections {
+  holidays: RxHolidayCollection;
 }
 
 /**
@@ -182,5 +207,6 @@ export interface RxItemsCollections {
   times: RxTimeCollection;
   schedules: RxScheduleCollection;
   favorites: RxFavoriteCollection;
+  holidays: RxHolidayCollection;
 }
 export type RxItemsDatabase = RxDatabase<RxItemsCollections>;

@@ -192,6 +192,7 @@ export default class App extends Vue {
             Dolibarr.getProjects(),
             Dolibarr.getTasks(),
             Dolibarr.getTimes(),
+            Dolibarr.getHolidays()
         ];
 
         await Promise.all(syncs).then((results) => {

@@ -53,6 +53,9 @@ function createSubWindowGlob(nameFile: string) {
         case "favorite":
             w = 700;
             break;
+        case "holidays":
+            w = 700;
+            break;
     }
 
     return createSubWindow(nameFile, onTop, w, h);
@@ -209,6 +212,14 @@ async function createMainWindow() {
                     click: function() {
                         subWindows["favorite"] = createSubWindowGlob(
                             "favorite"
+                        );
+                    },
+                },
+                {
+                    label: "Congés",
+                    click: function() {
+                        subWindows["holidays"] = createSubWindowGlob(
+                            "holidays"
                         );
                     },
                 },

@@ -3,7 +3,8 @@ import * as PouchdbAdapterIdb from "pouchdb-adapter-idb";
 
 import {
     RxClientDocument,
-    RxFavoriteDocumentType,
+    RxHolidayDocument,
+    RxHolidayDocumentType,
     RxItemsCollections,
     RxItemsDatabase,
     RxProjectDocument,
@@ -26,6 +27,7 @@ import { RxDBReplicationPlugin } from "rxdb/plugins/replication";
 import { RxDBValidatePlugin } from "rxdb/plugins/validate";
 import clientSchema from "@/schemas/Client.schema";
 import favoriteSchema from "@/schemas/Favorite.schema";
+import holidaySchema from "@/schemas/Holiday.schema";
 import projectSchema from "@/schemas/Project.schema";
 import scheduleSchema from "@/schemas/Schedule.schema";
 import taskSchema from "@/schemas/Task.schema";
@@ -98,6 +100,35 @@ const collections = [
     {
         name: "favorites",
         schema: favoriteSchema,
+    },
+    {
+        name: "holidays",
+        schema: holidaySchema,
+        methods: {
+            getDateStart(this: RxHolidayDocument): string {
+                const d = new Date(this.dateDebut * 1000),
+                    year = d.getUTCFullYear();
+                let month = "" + (d.getUTCMonth() + 1),
+                    day = "" + d.getUTCDate();
+
+                if (month.length < 2) month = "0" + month;
+                if (day.length < 2) day = "0" + day;
+
+                return [year, month, day].join("-");
+            },
+        
+            getDateEnd(this: RxHolidayDocument): string {
+                const d = new Date(this.dateFin * 1000),
+                    year = d.getUTCFullYear();
+                let month = "" + (d.getUTCMonth() + 1),
+                    day = "" + d.getUTCDate();
+
+                if (month.length < 2) month = "0" + month;
+                if (day.length < 2) day = "0" + day;
+
+                return [year, month, day].join("-");
+            },
+        }
     },
 ];
 
@@ -202,6 +233,10 @@ async function _create(): Promise<RxItemsDatabase> {
     }, true);
     
     db.collections.schedules.preInsert((docObj: RxScheduleDocumentType) => {
+        docObj.id = uuidv4();
+    }, true);
+    
+    db.collections.holidays.preInsert((docObj: RxHolidayDocumentType) => {
         docObj.id = uuidv4();
     }, true);
 
