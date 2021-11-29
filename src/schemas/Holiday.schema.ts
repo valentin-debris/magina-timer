@@ -26,6 +26,14 @@ const schema: RxJsonSchema = {
             type: "integer",
             default: 0,
         },
+        dolibarrId: {
+            type: "string",
+            default: "",
+        },
+        owner: {
+            type: "integer",
+            default: 0,
+        },
         needInsert: {
             type: "integer",
             default: 0,
@@ -39,7 +47,7 @@ const schema: RxJsonSchema = {
             default: 0,
         },
     },
-    required: [],
+    required: ["fullname"],
     indexes: ["dateDebut", "fullname"],
 };
 

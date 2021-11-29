@@ -12,7 +12,7 @@ import {
     RxScheduleDocumentType,
     RxTaskDocument,
     RxTimeDocument,
-    RxTimeDocumentType
+    RxTimeDocumentType,
 } from "@/RxDB";
 import { addRxPlugin, createRxDatabase } from "rxdb/plugins/core";
 
@@ -58,8 +58,8 @@ const collections = [
         methods: {
             className(this: RxClientDocument): string {
                 return "client";
-            }
-        }
+            },
+        },
     },
     {
         name: "projects",
@@ -67,8 +67,8 @@ const collections = [
         methods: {
             className(this: RxProjectDocument): string {
                 return "project";
-            }
-        }
+            },
+        },
     },
     {
         name: "tasks",
@@ -76,26 +76,25 @@ const collections = [
         methods: {
             className(this: RxTaskDocument): string {
                 return "task";
-            }
-        }
+            },
+        },
     },
     {
         name: "schedules",
         schema: scheduleSchema,
         methods: {
-            getRelated(this: RxScheduleDocument): Promise<any>|null|undefined {
-                if(this.clientId)
-                    return this.clientId_;
-                if(this.projectId)
-                    return this.projectId_;
-                if(this.taskId)
-                    return this.taskId_;
+            getRelated(
+                this: RxScheduleDocument
+            ): Promise<any> | null | undefined {
+                if (this.clientId) return this.clientId_;
+                if (this.projectId) return this.projectId_;
+                if (this.taskId) return this.taskId_;
                 return null;
             },
             className(this: RxScheduleDocument): string {
                 return "schedule";
-            }
-        }
+            },
+        },
     },
     {
         name: "favorites",
@@ -116,7 +115,7 @@ const collections = [
 
                 return [year, month, day].join("-");
             },
-        
+
             getDateEnd(this: RxHolidayDocument): string {
                 const d = new Date(this.dateFin * 1000),
                     year = d.getUTCFullYear();
@@ -128,7 +127,7 @@ const collections = [
 
                 return [year, month, day].join("-");
             },
-        }
+        },
     },
 ];
 
@@ -150,7 +149,7 @@ async function _create(): Promise<RxItemsDatabase> {
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     (window as any).db = db; // write to window for debugging
 
-    // create collections 
+    // create collections
     //@ts-ignore
     await Promise.all(collections.map((colData) => db.collection(colData)));
 
@@ -223,7 +222,7 @@ async function _create(): Promise<RxItemsDatabase> {
 
             className(this: RxTimeDocument): string {
                 return "time";
-            }
+            },
         },
     });
 
@@ -231,11 +230,11 @@ async function _create(): Promise<RxItemsDatabase> {
     db.collections.times.preInsert((docObj: RxTimeDocumentType) => {
         docObj.id = uuidv4();
     }, true);
-    
+
     db.collections.schedules.preInsert((docObj: RxScheduleDocumentType) => {
         docObj.id = uuidv4();
     }, true);
-    
+
     db.collections.holidays.preInsert((docObj: RxHolidayDocumentType) => {
         docObj.id = uuidv4();
     }, true);

@@ -5,7 +5,7 @@ import axios, { AxiosError } from "axios";
 import Config from "@/plugins/electronStore";
 import DatabaseService from "./database";
 import { RxCollection } from "rxdb";
-import { RxTimeDocument } from "@/RxDB";
+import { RxHolidayDocument, RxTimeDocument } from "@/RxDB";
 import errorH from "./errorHandler";
 import keytar from "keytar";
 
@@ -82,7 +82,7 @@ async function getData(type: string, collection: RxCollection, urlApi: string) {
             } else {
                 await Promise.all(
                     response.data.map(async (i: RxTimeDocument) => {
-                        if (type == "times") {
+                        if (type == "times" || type == "holidays") {
                             //When sync items, it returns also the ones that we have created between
                             // the last sync & now, so get the right ID to avoid duplicate
                             const dupli = await collection
@@ -235,6 +235,49 @@ async function removeTime(time: RxTimeDocument) {
     return true;
 }
 
+async function manageHoliday(holiday: RxHolidayDocument) {
+    await checkCred();
+    const fdateStart = holiday.getDateStart() + " 00:00:00";
+    const fdateEnd = holiday.getDateEnd() + " 23:59:59";
+    try {
+        const dataH = {
+            dateStart: fdateStart,
+            dateEnd: fdateEnd,
+            description: holiday.description,
+        };
+
+        const baseHoliday = "/magina/v2/holidays/";
+        let response = null;
+        if (holiday.needInsert) response = await axios.post(baseHoliday, dataH);
+        else if (holiday.needUpdate)
+            response = await axios.put(baseHoliday, dataH);
+        else if (holiday.needRemove)
+            response = await axios.delete(baseHoliday + holiday.dolibarrId);
+
+        if (response) {
+            const dolibarrId = response.data.success.id;
+            const fullname = response.data.success.fullname;
+            if (holiday.needRemove) await holiday.remove();
+            else {
+                await holiday.atomicUpdate((data) => {
+                    data.fullname = fullname;
+                    data.dolibarrId = dolibarrId + "";
+                    data.needInsert = 0;
+                    data.needUpdate = 0;
+                    data.existRemote = 1;
+                    return data;
+                });
+            }
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        errorH(error);
+        return false;
+    }
+}
+
 async function logout() {
     await keytar.deletePassword(keytarService, "api-key");
     Sentry.configureScope((scope) => scope.setUser(null));
@@ -242,27 +285,36 @@ async function logout() {
 
 async function getClients() {
     const db = await DatabaseService.get();
-    return await getData("clients", db.clients, "/magina/v1/clients");
+    return await getData("clients", db.clients, "/magina/v2/clients");
 }
 
 async function getProjects() {
     const db = await DatabaseService.get();
-    return await getData("projects", db.projects, "/magina/v1/projects");
+    return await getData("projects", db.projects, "/magina/v2/projects");
 }
 
 async function getTasks() {
     const db = await DatabaseService.get();
-    return await getData("tasks", db.tasks, "/magina/v1/tasks");
+    return await getData("tasks", db.tasks, "/magina/v2/tasks");
 }
 
 async function getTimes() {
     const db = await DatabaseService.get();
-    return await getData("times", db.times, "/magina/v1/timespents");
+    return await getData("times", db.times, "/magina/v2/timespents");
 }
 
 async function getHolidays() {
     const db = await DatabaseService.get();
-    return await getData("holidays", db.holidays, "/magina/v1/holidays");
+    await db.holidays
+        .find({
+            selector: {
+                dateFin: {
+                    $lte: Math.trunc(new Date().getTime() / 1000),
+                },
+            },
+        })
+        .remove();
+    return await getData("holidays", db.holidays, "/magina/v2/holidays");
 }
 
 async function updateDolibarr(time: RxTimeDocument) {
@@ -285,7 +337,7 @@ async function updateDolibarr(time: RxTimeDocument) {
                         await createTime(newT);
                     }
                 } else {
-                   await updateTime(time);
+                    await updateTime(time);
                 }
             }
         } else if (time.needRemove) {
@@ -308,5 +360,6 @@ export default {
     createTime,
     updateTime,
     removeTime,
+    manageHoliday,
     updateDolibarr,
 };
