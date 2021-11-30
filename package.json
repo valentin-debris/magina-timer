@@ -1,7 +1,7 @@
 {
     "name": "magina-timer",
     "release": "build",
-    "version": "2.0.6",
+    "version": "2.1.0",
     "private": true,
     "description": "Application Magina Timer pour Mac & Windows",
     "author": "Valentin Debris <valentin@magina.fr>",

@@ -21,6 +21,11 @@
                     {{ subtitle }}
                 </div>
             </div>
+            <div v-if="descTask">
+                <v-icon color="black" :title="descTask"
+                    >far fa-comment-dots</v-icon
+                >
+            </div>
             <div class="duration">{{ timeInHMS() }}</div>
         </div>
         <button v-on:click="startTimeFromHere()">
@@ -41,6 +46,7 @@ export default class TimeItem extends Vue {
     @Prop() time!: RxTimeDocument;
     private loading = false;
     private subtitle = "";
+    private descTask = "";
 
     @Watch("time.taskId", { immediate: true })
     async onChangeTask() {
@@ -82,6 +88,7 @@ export default class TimeItem extends Vue {
 
         const tk = await this.time.taskId_;
         if (tk != null) {
+            this.descTask = tk.description;
             subTitle = tk.refPropal + " " + tk.title;
             const pj = await tk.projectId_;
             if (pj != null) {
