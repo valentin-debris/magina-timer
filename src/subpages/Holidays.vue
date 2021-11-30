@@ -14,7 +14,11 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="item in holidays" :key="item.id">
+                            <tr
+                                v-for="item in holidays"
+                                :key="item.id"
+                                :class="item.isNow() ? 'current' : ''"
+                            >
                                 <td>{{ item.fullname }}</td>
                                 <td>{{ item.getDateStart() }}</td>
                                 <td>{{ item.getDateEnd() }}</td>
@@ -27,13 +31,6 @@
                                         </div>
                                         <div v-if="item.owner">
                                             <template>
-                                                <!-- <v-icon
-                                                    small
-                                                    class="mr-2"
-                                                    @click="editItem(item)"
-                                                >
-                                                    mdi-pencil
-                                                </v-icon> -->
                                                 <v-icon
                                                     small
                                                     @click="deleteItem(item)"
@@ -236,7 +233,7 @@ export default class Holidays extends Vue {
     public async save() {
         //@ts-ignore
         this.$refs.form.validate();
-        console.log(this.pickerDates);
+
         if (!this.valid || this.pickerDates.length == 0) return;
 
         let start = this.pickerDates[0];
@@ -262,6 +259,7 @@ export default class Holidays extends Vue {
             dateDebut: tsStart,
             dateFin: tsEnd,
             dolibarrId: "",
+            statut: 2,
             existRemote: 0,
             owner: 1,
             needInsert: 1,
@@ -290,19 +288,7 @@ export default class Holidays extends Vue {
                 t.needRemove = 1;
                 return t;
             });
-
-            // const holiday = await this.db.holidays.insert(obj);
-
-            const result = await dolibarr.manageHoliday(item);
-
-            // const sched = await this.db.schedules
-            //     .findOne({
-            //         selector: {
-            //             id: item.id,
-            //         },
-            //     })
-            //     .exec();
-            // await sched?.remove();
+            await dolibarr.manageHoliday(item);
             await this.generateTableData();
         }
     }
@@ -330,6 +316,15 @@ export default class Holidays extends Vue {
         background-color: var(--v-primary-base);
         text-align: center;
         padding: 5px;
+    }
+
+    .v-data-table > .v-data-table__wrapper > table > tbody > tr {
+        &.current {
+            background-color: lightgreen;
+        }
+        > td {
+            height: 35px;
+        }
     }
 }
 </style>

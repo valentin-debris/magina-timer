@@ -197,6 +197,7 @@ export interface RxHolidayDocumentType {
     fullname: string;
     dateDebut: number;
     dateFin: number;
+    statut: number;
     dolibarrId: string;
     existRemote: number;
     owner: number;
@@ -208,6 +209,7 @@ export interface RxHolidayDocumentType {
 interface RxHolidayDocMethods {
     getDateStart(): string;
     getDateEnd(): string;
+    isNow(): boolean;
 }
 // ORM methods
 

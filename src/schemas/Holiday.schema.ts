@@ -22,6 +22,10 @@ const schema: RxJsonSchema = {
         dateFin: {
             type: "integer",
         },
+        statut: {
+            type: "integer",
+            default: 0,
+        },
         existRemote: {
             type: "integer",
             default: 0,
