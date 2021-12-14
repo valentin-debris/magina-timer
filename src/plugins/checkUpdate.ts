@@ -23,8 +23,8 @@ async function checkUpdate() {
                 const dialogOpts = {
                     type: "info",
                     buttons: ["Redémarrer", "Plus tard"],
-                    title: "Mise à jour disponible",
-                    message: "Une nouvelle version a été téléchargée. Redémarrez l'application pour appliquer les mises à jour.",
+                    title: "MaginaTimer - Mise à jour disponible",
+                    message: "Une nouvelle version du MGT a été téléchargée. Redémarrez l'application pour appliquer les mises à jour.",
                     detail: notes,
                 };
 

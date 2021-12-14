@@ -292,7 +292,14 @@ if (!gotTheLock) {
             //send event to start
             var params = url.parse(commandLine[commandLine.length - 1], true)
                 .query;
-            if (params) mainWindow.webContents.send("openFromLink", params);
+            //src: https://stackoverflow.com/a/32108184/5959552
+            if (
+                params &&
+                Object.keys(params).length === 0 &&
+                Object.getPrototypeOf(params) === Object.prototype
+            ) {
+                mainWindow.webContents.send("openFromLink", params);
+            }
         }
     });
 

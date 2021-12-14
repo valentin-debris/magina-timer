@@ -39,7 +39,7 @@ import iconNotif from "./assets/images/logo-notif.png";
 import EventBus from "./plugins/eventBus";
 
 @Component({
-    components: { Login, HomePage, Header, Panel, Filters, Notifications },
+    components: { Login, HomePage, Header, Panel, Filters, Notifications }
 })
 export default class App extends Vue {
     private timeCurrent: RxTimeDocument | null = null;
@@ -59,10 +59,10 @@ export default class App extends Vue {
         this.sub = this.db.times
             .findOne({
                 selector: {
-                    isCurrent: 1,
-                },
+                    isCurrent: 1
+                }
             })
-            .$.subscribe((time) => {
+            .$.subscribe(time => {
                 this.timeCurrent = time;
             });
 
@@ -72,21 +72,23 @@ export default class App extends Vue {
         });
 
         ipcRenderer.on("openFromLink", async (event, arg) => {
-            console.log("[APP] OpenFromLink"); 
+            console.log("[APP] OpenFromLink");
             console.log(arg);
-            
-            const db = await DatabaseService.get();
-            await DatabaseService.stopCurrent();
 
-            const obj = DatabaseService.getNewTimeObj();
-            obj.isCurrent = 1;
-            obj.title = arg.title;
-            if(arg.taskId) {
-                obj.taskId = arg.taskId;
-            } else {
-                obj.isPersonal = 1;
+            if (arg && arg.title) {
+                const db = await DatabaseService.get();
+                await DatabaseService.stopCurrent();
+
+                const obj = DatabaseService.getNewTimeObj();
+                obj.isCurrent = 1;
+                obj.title = arg.title;
+                if (arg.taskId) {
+                    obj.taskId = arg.taskId;
+                } else {
+                    obj.isPersonal = 1;
+                }
+                await db.times.insert(obj);
             }
-            await db.times.insert(obj);
         });
 
         await this.synchro();
@@ -128,7 +130,7 @@ export default class App extends Vue {
         const notification = {
             title: "Pensez à tracker votre temps",
             body: "On arrête de se tourner les pouces et on bosse !",
-            icon: iconNotif,
+            icon: iconNotif
         };
 
         const notifTime = new window.Notification(
@@ -175,14 +177,14 @@ export default class App extends Vue {
                     $or: [
                         { needInsert: 1 },
                         { needUpdate: 1 },
-                        { needRemove: 1 },
-                    ],
-                },
+                        { needRemove: 1 }
+                    ]
+                }
             })
             .exec();
 
         await Promise.all(
-            items.map(async (i) => {
+            items.map(async i => {
                 await Dolibarr.updateDolibarr(i);
             })
         );
@@ -195,8 +197,8 @@ export default class App extends Vue {
             Dolibarr.getHolidays()
         ];
 
-        await Promise.all(syncs).then((results) => {
-            const checker = results.every((v) => v === true);
+        await Promise.all(syncs).then(results => {
+            const checker = results.every(v => v === true);
 
             if (checker == true) {
                 console.log("[HP] Sync done");
@@ -226,8 +228,8 @@ export default class App extends Vue {
                 const favT = await this.db.favorites
                     .findOne({
                         selector: {
-                            position: digit,
-                        },
+                            position: digit
+                        }
                     })
                     .exec();
 
