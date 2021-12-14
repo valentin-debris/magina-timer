@@ -3,11 +3,13 @@
     "release": "build",
     "version": "2.1.0",
     "private": true,
-    "description": "Application Magina Timer pour Mac & Windows",
+    "description": "Application Magina Timer pour Linux & Windows",
     "author": "Valentin Debris <valentin@magina.fr>",
     "scripts": {
         "serve": "vue-cli-service electron:serve",
         "build": "vue-cli-service electron:build",
+        "build-all": "vue-cli-service electron:build --linux --win",
+        "build-linux": "vue-cli-service electron:build --linux",
         "lint": "vue-cli-service lint",
         "release": "vue-cli-service electron:build -p always",
         "generate-icons": "electron-icon-builder --input=./public/icon.png --output=build --flatten"
@@ -28,7 +30,7 @@
         "electron-store": "^6.0.1",
         "electron-updater": "^4.3.5",
         "file-saver": "^2.0.5",
-        "keytar": "^6.0.1",
+        "keytar": "^7.7.0",
         "pouchdb-adapter-http": "^7.2.2",
         "pouchdb-adapter-idb": "^7.2.2",
         "roboto-fontface": "*",

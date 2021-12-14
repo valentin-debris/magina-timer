@@ -9,7 +9,7 @@ import {
     app,
     ipcMain,
     protocol,
-    shell,
+    shell
 } from "electron";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
 
@@ -26,7 +26,7 @@ const iconPath = path.join(__static, "icon.png");
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
-    { scheme: "app", privileges: { secure: true, standard: true } },
+    { scheme: "app", privileges: { secure: true, standard: true } }
 ]);
 
 let mainWindow: BrowserWindow;
@@ -77,8 +77,8 @@ function createSubWindow(
         webPreferences: {
             webSecurity: false,
             nodeIntegration: (process.env
-                .ELECTRON_NODE_INTEGRATION as unknown) as boolean,
-        },
+                .ELECTRON_NODE_INTEGRATION as unknown) as boolean
+        }
     });
     window.setMenu(null);
 
@@ -111,8 +111,8 @@ async function createMainWindow() {
             // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
             webSecurity: false,
             nodeIntegration: (process.env
-                .ELECTRON_NODE_INTEGRATION as unknown) as boolean,
-        },
+                .ELECTRON_NODE_INTEGRATION as unknown) as boolean
+        }
     });
 
     mainWindow.on("resize", () => {
@@ -170,13 +170,13 @@ async function createMainWindow() {
                         subWindows["preferences"] = createSubWindowGlob(
                             "preferences"
                         );
-                    },
+                    }
                 },
                 {
                     label: "Se déconnecter",
                     click: function() {
                         mainWindow.webContents.send("logout");
-                    },
+                    }
                 },
                 {
                     label: "Quitter",
@@ -184,9 +184,9 @@ async function createMainWindow() {
                         // @ts-ignore
                         app.isQuiting = true;
                         app.quit();
-                    },
-                },
-            ],
+                    }
+                }
+            ]
         },
         {
             label: "Options",
@@ -197,7 +197,7 @@ async function createMainWindow() {
                         subWindows["timeExport"] = createSubWindowGlob(
                             "timeExport"
                         );
-                    },
+                    }
                 },
                 {
                     label: "Planning",
@@ -205,7 +205,7 @@ async function createMainWindow() {
                         subWindows["planning"] = createSubWindowGlob(
                             "planning"
                         );
-                    },
+                    }
                 },
                 {
                     label: "Favoris",
@@ -213,17 +213,9 @@ async function createMainWindow() {
                         subWindows["favorite"] = createSubWindowGlob(
                             "favorite"
                         );
-                    },
-                },
-                {
-                    label: "Congés",
-                    click: function() {
-                        subWindows["holidays"] = createSubWindowGlob(
-                            "holidays"
-                        );
-                    },
-                },
-            ],
+                    }
+                }
+            ]
         },
         {
             label: "Synchroniser",
@@ -232,9 +224,15 @@ async function createMainWindow() {
                     label: "Synchroniser",
                     click: function() {
                         mainWindow.webContents.send("synchronize");
-                    },
-                },
-            ],
+                    }
+                }
+            ]
+        },
+        {
+            label: "Congés",
+            click: function() {
+                subWindows["holidays"] = createSubWindowGlob("holidays");
+            }
         },
         {
             label: "Aide",
@@ -248,7 +246,7 @@ async function createMainWindow() {
                         // shell.openExternal(
                         //     "https://developers.magina.fr/documentation/magina-timer/"
                         // );
-                    },
+                    }
                 },
                 {
                     label: "Slack",
@@ -256,16 +254,16 @@ async function createMainWindow() {
                         shell.openExternal(
                             "slack://channel?team=TBRMMJZC3&id=C010PKT2BNX"
                         );
-                    },
+                    }
                 },
                 {
                     label: "v" + app.getVersion() + (isDev ? "-dev" : ""),
                     click: function() {
                         mainWindow.webContents.openDevTools();
-                    },
-                },
-            ],
-        },
+                    }
+                }
+            ]
+        }
     ]);
     Menu.setApplicationMenu(appMenu);
 
@@ -323,7 +321,7 @@ if (!gotTheLock) {
 
         Sentry.init({
             dsn: process.env.VUE_APP_CRASH_HOST,
-            environment: isDev ? "development" : "production",
+            environment: isDev ? "development" : "production"
         });
 
         await AutoUpdate();
@@ -337,7 +335,7 @@ if (!gotTheLock) {
                 label: "Ouvrir",
                 click: function() {
                     mainWindow.show();
-                },
+                }
             },
             {
                 label: "Quitter",
@@ -345,8 +343,8 @@ if (!gotTheLock) {
                     // @ts-ignore
                     app.isQuiting = true;
                     app.quit();
-                },
-            },
+                }
+            }
         ]);
 
         // Fait un changement au menu contextuel
@@ -370,7 +368,7 @@ if (!gotTheLock) {
     // Exit cleanly on request from parent process in development mode.
     if (isDev) {
         if (process.platform === "win32") {
-            process.on("message", (data) => {
+            process.on("message", data => {
                 if (data === "graceful-exit") {
                     app.quit();
                 }
@@ -395,7 +393,7 @@ if (!gotTheLock) {
         // Set the path of electron.exe and your app.
         // These two additional parameters are only available on windows.
         app.setAsDefaultProtocolClient("mgt", process.execPath, [
-            path.resolve(process.argv[1]),
+            path.resolve(process.argv[1])
         ]);
     } else {
         app.setAsDefaultProtocolClient("mgt");
