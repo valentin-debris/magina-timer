@@ -21,6 +21,11 @@
                             {{ subtitle }}
                         </div>
                     </div>
+                    <div v-if="descTask" class="descTk">
+                        <v-icon color="white" :title="descTask"
+                            >far fa-comment-dots</v-icon
+                        >
+                    </div>
                     <div class="duration" v-on:click="togglePan()">
                         {{ duration }}
                     </div>
@@ -88,6 +93,7 @@ export default class Header extends Vue {
     private duration = "";
     private title = "";
     private subtitle = "";
+    private descTask = "";
     private intervalUpdDuration: NodeJS.Timeout | null = null;
 
     private headerDescs = [{ text: "titre", value: "title" }];
@@ -289,9 +295,11 @@ export default class Header extends Vue {
         }
 
         let subTitle = "";
+        this.descTask = "";
 
         const tk = await this.time.taskId_;
         if (tk != null) {
+            this.descTask = tk.description;
             subTitle = tk.title;
             const pj = await tk.projectId_;
             if (pj != null) {
@@ -391,6 +399,10 @@ export default class Header extends Vue {
                     overflow: hidden;
                     padding-left: 10px;
                 }
+            }
+            .descTk {
+                display: flex;
+                margin: 0 5px;
             }
         }
 

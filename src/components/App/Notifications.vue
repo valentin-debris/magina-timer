@@ -67,7 +67,7 @@ export default class Notifications extends Vue {
     //triggered once a day (when the first time of the day starts )
     public async newDay() {
         this.items = [];
-        if (new Date().getDate() == 27) {
+        if (new Date().getDate() >= 27) {
             this.items.push({
                 id: "0",
                 act: "payday",

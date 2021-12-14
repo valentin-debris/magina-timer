@@ -44,6 +44,10 @@ module.exports = {
             entry: "src/subpages/timeExport.ts",
             title: "MGT - Export",
         },
+        holidays: {
+            entry: "src/subpages/holidays.ts",
+            title: "MGT - Congés",
+        },
     },
     chainWebpack: (config) => {
         // Xlsx

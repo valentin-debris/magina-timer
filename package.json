@@ -1,7 +1,7 @@
 {
     "name": "magina-timer",
     "release": "build",
-    "version": "2.0.6",
+    "version": "2.1.0",
     "private": true,
     "description": "Application Magina Timer pour Linux & Windows",
     "author": "Valentin Debris <valentin@magina.fr>",
@@ -30,7 +30,7 @@
         "electron-store": "^6.0.1",
         "electron-updater": "^4.3.5",
         "file-saver": "^2.0.5",
-        "keytar": "^6.0.1",
+        "keytar": "^7.7.0",
         "pouchdb-adapter-http": "^7.2.2",
         "pouchdb-adapter-idb": "^7.2.2",
         "roboto-fontface": "*",

@@ -81,10 +81,6 @@
                 </p>
             </template>
         </v-main>
-
-        <v-snackbar v-model="snackbar" timeout="2000">
-            {{ message }}
-        </v-snackbar>
     </v-app>
 </template>
 
@@ -136,8 +132,6 @@ export default class Favorite extends Vue {
         obj: null,
     };
     private dialog = false;
-    private snackbar = false;
-    private message = "";
 
     public created() {
         window.addEventListener(

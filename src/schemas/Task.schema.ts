@@ -26,9 +26,18 @@ const schema: RxJsonSchema = {
         refPropal: {
             type: "string",
         },
+        plannedWorkload: {
+            type: "integer",
+        },
+        notePublic: {
+            type: "string",
+        },
+        notePrivate: {
+            type: "string",
+        },
         existRemote: {
             type: "integer",
-        }
+        },
     },
     required: ["refPropal", "projectId"],
     indexes: ["refPropal", "projectId"],

@@ -5,8 +5,6 @@ import errorH from "./errorHandler";
 
 const isDev = process.env.NODE_ENV !== "production";
 
-const axios = require("axios").default;
-
 async function checkUpdate() {
     if (isDev) return;
 
