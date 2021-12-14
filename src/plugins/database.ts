@@ -12,7 +12,7 @@ import {
     RxScheduleDocumentType,
     RxTaskDocument,
     RxTimeDocument,
-    RxTimeDocumentType,
+    RxTimeDocumentType
 } from "@/RxDB";
 import { addRxPlugin, createRxDatabase } from "rxdb/plugins/core";
 
@@ -58,8 +58,8 @@ const collections = [
         methods: {
             className(this: RxClientDocument): string {
                 return "client";
-            },
-        },
+            }
+        }
     },
     {
         name: "projects",
@@ -67,17 +67,27 @@ const collections = [
         methods: {
             className(this: RxProjectDocument): string {
                 return "project";
-            },
-        },
+            }
+        }
     },
     {
         name: "tasks",
         schema: taskSchema,
+        migrationStrategies: {
+            //transforms data from version 0 to version 1
+            1: function(oldDoc: RxTaskDocument) {
+                //@ts-ignore
+                oldDoc.plannedWorkload = 0;
+                oldDoc.notePublic = "";
+                oldDoc.notePrivate = "";
+                return oldDoc;
+            }
+        },
         methods: {
             className(this: RxTaskDocument): string {
                 return "task";
-            },
-        },
+            }
+        }
     },
     {
         name: "schedules",
@@ -93,12 +103,12 @@ const collections = [
             },
             className(this: RxScheduleDocument): string {
                 return "schedule";
-            },
-        },
+            }
+        }
     },
     {
         name: "favorites",
-        schema: favoriteSchema,
+        schema: favoriteSchema
     },
     {
         name: "holidays",
@@ -135,9 +145,9 @@ const collections = [
                 today.setHours(23, 59, 59, 59);
 
                 return dStart <= today && dEnd > today;
-            },
-        },
-    },
+            }
+        }
+    }
 ];
 
 /**
@@ -153,14 +163,14 @@ async function _create(): Promise<RxItemsDatabase> {
 
     const db = await createRxDatabase<RxItemsCollections>({
         name: nameDB,
-        adapter: useAdapter,
+        adapter: useAdapter
     });
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     (window as any).db = db; // write to window for debugging
 
     // create collections
     //@ts-ignore
-    await Promise.all(collections.map((colData) => db.collection(colData)));
+    await Promise.all(collections.map(colData => db.collection(colData)));
 
     await db.collection({
         name: "times",
@@ -177,7 +187,7 @@ async function _create(): Promise<RxItemsDatabase> {
                 delete oldDoc.personalTaskId;
                 oldDoc.isPersonal = 0;
                 return oldDoc;
-            },
+            }
         },
         methods: {
             //Output : 2020-02-10
@@ -231,8 +241,8 @@ async function _create(): Promise<RxItemsDatabase> {
 
             className(this: RxTimeDocument): string {
                 return "time";
-            },
-        },
+            }
+        }
     });
 
     // hooks
@@ -274,7 +284,7 @@ function _getNewTimeObj(base?: RxTimeDocument) {
         needUpdate: 0,
         needRemove: 0,
         isCurrent: 0,
-        existRemote: 0,
+        existRemote: 0
     };
     return obj;
 }
@@ -295,14 +305,14 @@ const DatabaseService = {
         const time = await db.times
             .findOne({
                 selector: {
-                    isCurrent: 1,
-                },
+                    isCurrent: 1
+                }
             })
             .exec();
         if (time) {
             const duration = DateConv.timeUTC(dateEnd) - time.start + "";
 
-            await time.atomicUpdate((t) => {
+            await time.atomicUpdate(t => {
                 t.duration = duration;
                 t.isCurrent = 0;
                 t.needInsert = 1;
@@ -318,6 +328,6 @@ const DatabaseService = {
                 await db.times.insert(obj);
             }
         }
-    },
+    }
 };
 export default DatabaseService;

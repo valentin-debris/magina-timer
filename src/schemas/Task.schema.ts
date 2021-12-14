@@ -3,44 +3,44 @@ import { RxJsonSchema } from "rxdb";
 const schema: RxJsonSchema = {
     title: "task schema",
     description: "describes a Task",
-    version: 0,
+    version: 1,
     type: "object",
     properties: {
         id: {
             type: "string",
-            primary: true,
+            primary: true
         },
         title: {
-            type: "string",
+            type: "string"
         },
         description: {
-            type: "string",
+            type: "string"
         },
         projectId: {
             type: "string",
-            ref: "projects",
+            ref: "projects"
         },
         ref: {
-            type: "string",
+            type: "string"
         },
         refPropal: {
-            type: "string",
+            type: "string"
         },
         plannedWorkload: {
-            type: "integer",
+            type: "integer"
         },
         notePublic: {
-            type: "string",
+            type: "string"
         },
         notePrivate: {
-            type: "string",
+            type: "string"
         },
         existRemote: {
-            type: "integer",
-        },
+            type: "integer"
+        }
     },
     required: ["refPropal", "projectId"],
-    indexes: ["refPropal", "projectId"],
+    indexes: ["refPropal", "projectId"]
 };
 
 export default schema;
