@@ -90,7 +90,7 @@
                                                         <template
                                                             v-slot:activator="{
                                                                 on,
-                                                                attrs,
+                                                                attrs
                                                             }"
                                                         >
                                                             <v-text-field
@@ -188,7 +188,7 @@ import { RxDatabase } from "rxdb";
 import dolibarr from "@/plugins/dolibarr";
 
 @Component({
-    components: {},
+    components: {}
 })
 export default class Holidays extends Vue {
     private holidays: RxHolidayDocument[] = [];
@@ -227,7 +227,12 @@ export default class Holidays extends Vue {
     }
 
     public async generateTableData() {
-        this.holidays = await this.db.holidays.find().exec();
+        this.holidays = await this.db.holidays
+            .find()
+            .sort({
+                dateDebut: "asc"
+            })
+            .exec();
     }
 
     public async save() {
@@ -249,7 +254,7 @@ export default class Holidays extends Vue {
         const tsStart = parseInt("" + dateStart.getTime() / 1000, 10);
 
         const dateEnd = new Date(end);
-        dateEnd.setUTCHours(0, 0, 0, 0);
+        dateEnd.setUTCHours(23, 59, 59, 0);
         const tsEnd = parseInt("" + dateEnd.getTime() / 1000, 10);
 
         const obj = {
@@ -264,7 +269,7 @@ export default class Holidays extends Vue {
             owner: 1,
             needInsert: 1,
             needUpdate: 0,
-            needRemove: 0,
+            needRemove: 0
         };
         const holiday = await this.db.holidays.insert(obj);
 
@@ -282,7 +287,7 @@ export default class Holidays extends Vue {
 
     public async deleteItem(item: RxHolidayDocument) {
         if (confirm("Supprimer ce congé ?")) {
-            await item.atomicUpdate((t) => {
+            await item.atomicUpdate(t => {
                 t.needInsert = 0;
                 t.needUpdate = 0;
                 t.needRemove = 1;

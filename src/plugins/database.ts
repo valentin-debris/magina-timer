@@ -142,7 +142,6 @@ const collections = [
                 const dStart = new Date(this.dateDebut * 1000);
                 const dEnd = new Date(this.dateFin * 1000);
                 const today = new Date();
-                today.setHours(23, 59, 59, 59);
 
                 return dStart <= today && dEnd > today;
             }
